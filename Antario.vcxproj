@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{1B8103F7-F793-47B0-9FBE-44EC66BC319D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Antario</RootNamespace>
+    <ProjectName>Mirror</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</IntDir>
+    <ExecutablePath>$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);$(ExecutablePath);$(DXSDK_DIR)Utilities\bin\x86</ExecutablePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</IntDir>
+    <ExecutablePath>$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);$(ExecutablePath);$(DXSDK_DIR)Utilities\bin\x86</ExecutablePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <TargetName>mirror</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;ANTARIO_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;ANTARIO_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Mirror\Features\Aimbot.cpp" />
+    <ClCompile Include="Mirror\Features\EnginePrediction.cpp" />
+    <ClCompile Include="Mirror\GUI\GUI.cpp" />
+    <ClCompile Include="Mirror\Hooks.cpp" />
+    <ClCompile Include="Mirror\DLLMain.cpp" />
+    <ClCompile Include="Mirror\Menu.cpp" />
+    <ClCompile Include="Mirror\Settings.cpp" />
+    <ClCompile Include="Mirror\Utils\D3DFont.cpp" />
+    <ClCompile Include="Mirror\Utils\DrawManager.cpp" />
+    <ClCompile Include="Mirror\Utils\GlobalVars.cpp" />
+    <ClCompile Include="Mirror\Utils\Interfaces.cpp" />
+    <ClCompile Include="Mirror\Utils\NetvarManager.cpp" />
+    <ClCompile Include="Mirror\Features\ESP.cpp" />
+    <ClCompile Include="Mirror\Utils\Vector4D.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Mirror\Features\Aimbot.h" />
+    <ClInclude Include="Mirror\Features\EnginePrediction.h" />
+    <ClInclude Include="Mirror\Features\Features.h" />
+    <ClInclude Include="Mirror\Features\Misc.h" />
+    <ClInclude Include="Mirror\GUI\GUI.h" />
+    <ClInclude Include="Mirror\Hooks.h" />
+    <ClInclude Include="Antario\Menu.h" />
+    <ClInclude Include="Mirror\SDK\CGlobalVarsBase.h" />
+    <ClInclude Include="Mirror\SDK\CHandle.h" />
+    <ClInclude Include="Mirror\SDK\CEntity.h" />
+    <ClInclude Include="Mirror\SDK\CInput.h" />
+    <ClInclude Include="Mirror\SDK\ClientClass.h" />
+    <ClInclude Include="Mirror\SDK\Studio.hpp" />
+    <ClInclude Include="Mirror\Utils\Color.h" />
+    <ClInclude Include="Mirror\SDK\CPrediction.h" />
+    <ClInclude Include="Mirror\SDK\Definitions.h" />
+    <ClInclude Include="Mirror\SDK\IBaseClientDll.h" />
+    <ClInclude Include="Mirror\SDK\IClientEntity.h" />
+    <ClInclude Include="Mirror\SDK\IClientEntityList.h" />
+    <ClInclude Include="Mirror\SDK\IClientMode.h" />
+    <ClInclude Include="Mirror\SDK\IClientNetworkable.h" />
+    <ClInclude Include="Mirror\SDK\IClientRenderable.h" />
+    <ClInclude Include="Mirror\SDK\IClientThinkable.h" />
+    <ClInclude Include="Mirror\SDK\IClientUnknown.h" />
+    <ClInclude Include="Mirror\SDK\IGameEvent.h" />
+    <ClInclude Include="Mirror\SDK\IVEngineClient.h" />
+    <ClInclude Include="Mirror\SDK\KeyValues.h" />
+    <ClInclude Include="Mirror\SDK\PlayerInfo.h" />
+    <ClInclude Include="Mirror\Settings.h" />
+    <ClInclude Include="Mirror\Utils\D3DFont.h" />
+    <ClInclude Include="Mirror\Utils\DrawManager.h" />
+    <ClInclude Include="Mirror\EventListener.h" />
+    <ClInclude Include="Mirror\Utils\GlobalVars.h" />
+    <ClInclude Include="Mirror\Utils\Interfaces.h" />
+    <ClInclude Include="Mirror\SDK\Recv.h" />
+    <ClInclude Include="Mirror\SDK\Vector.h" />
+    <ClInclude Include="Mirror\SDK\VMatrix.h" />
+    <ClInclude Include="Mirror\Utils\NetvarManager.h" />
+    <ClInclude Include="Mirror\Utils\SPoint.h" />
+    <ClInclude Include="Mirror\Utils\SRect.h" />
+    <ClInclude Include="Mirror\Utils\Utils.h" />
+    <ClInclude Include="Mirror\Features\ESP.h" />
+    <ClInclude Include="Mirror\Utils\Vector4D.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
