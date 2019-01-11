@@ -22,12 +22,48 @@ void ESP::RenderBox(C_BaseEntity* pEnt)
                h  = int(std::roundf(vecScreenBottom.y - vecScreenOrigin.y)),
                w  = int(std::roundf(h * 0.25f));
 
-    /* Draw rect around the entity */
-    g_Render.Rect(sx - w, sy, sx + w, sy + h, (pEnt->GetTeam() == localTeam) ? teamColor : enemyColor);
+	auto boxColor = g::pLocalEntity->CanSeePlayer(pEnt, pEnt->GetEyePosition()) && !pEnt->IsBehindSmoke(g::pLocalEntity) ? Color::Black() : Color::Red();
 
-    /* Draw rect outline */
-    g_Render.Rect(sx - w - 1, sy - 1, sx + w + 1, sy + h + 1, Color::Black());
-    g_Render.Rect(sx - w + 1, sy + 1, sx + w - 1, sy + h - 1, Color::Black());
+	//Bottom
+	g_Render.Line(sx - w, sy, sx - w * 0.5, sy, boxColor);
+	g_Render.Line(sx + w * 0.5, sy, sx + w, sy, boxColor);
+
+	g_Render.Line(sx - w, sy - 1, sx - w * 0.5, sy - 1, Color::Black());
+	g_Render.Line(sx + w * 0.5, sy - 1, sx + w, sy - 1, Color::Black());
+
+	g_Render.Line(sx - w, sy + 1, sx - w * 0.5, sy + 1, Color::Black());
+	g_Render.Line(sx + w * 0.5, sy + 1, sx + w, sy + 1, Color::Black());
+	//Top
+	g_Render.Line(sx - w, sy + h, sx - w * 0.5, sy + h, boxColor);
+	g_Render.Line(sx + w * 0.5, sy + h, sx + w, sy + h, boxColor);
+
+	g_Render.Line(sx - w, sy + h + 1, sx - w * 0.5, sy + h + 1, Color::Black());
+	g_Render.Line(sx + w * 0.5, sy + h + 1, sx + w, sy + h + 1, Color::Black());
+
+
+	g_Render.Line(sx - w, sy + h - 1, sx - w * 0.5, sy + h - 1, Color::Black());
+	g_Render.Line(sx + w * 0.5, sy + h - 1, sx + w, sy + h - 1, Color::Black());
+
+
+	//Right part
+	g_Render.Line(sx - w, sy, sx - w, sy + h / 4, boxColor);
+	g_Render.Line(sx - w, sy + h, sx - w, sy + h * 0.75, boxColor);
+
+	g_Render.Line(sx - w - 1, sy, sx - w - 1, sy + h / 4, Color::Black());
+	g_Render.Line(sx - w - 1, sy + h, sx - w - 1, sy + h * 0.75, Color::Black());
+
+	g_Render.Line(sx - w + 1, sy, sx - w + 1, sy + h / 4, Color::Black());
+	g_Render.Line(sx - w + 1, sy + h, sx - w + 1, sy + h * 0.75, Color::Black());
+
+	//Left part
+	g_Render.Line(sx + w, sy, sx + w, sy + h / 4, boxColor);
+	g_Render.Line(sx + w, sy + h, sx + w, sy + h * 0.75, boxColor);
+
+	g_Render.Line(sx + w + 1, sy, sx + w + 1, sy + h / 4, Color::Black());
+	g_Render.Line(sx + w + 1, sy + h, sx + w + 1, sy + h * 0.75, Color::Black());
+
+	g_Render.Line(sx + w - 1, sy, sx + w - 1, sy + h / 4, Color::Black());
+	g_Render.Line(sx + w - 1, sy + h, sx + w - 1, sy + h * 0.75, Color::Black());
 }
 
 void ESP::RenderName(C_BaseEntity* pEnt, int iterator)
@@ -81,12 +117,14 @@ void ESP::Render()
     if (!g::pLocalEntity || !g_pEngine->IsInGame())
         return;
 
+	if (!g_Settings.bEspEnable)
+		return;
+
     localTeam = g::pLocalEntity->GetTeam();
 
     for (int it = 1; it <= g_pEngine->GetMaxClients(); ++it)
     {
         C_BaseEntity* pPlayerEntity = g_pEntityList->GetClientEntity(it);
-
 
         if (!pPlayerEntity
             || pPlayerEntity == g::pLocalEntity
@@ -94,14 +132,20 @@ void ESP::Render()
             || !pPlayerEntity->IsAlive())
             continue;
 
+		if (!g_Settings.bEspPEnemy && pPlayerEntity->GetTeam() != localTeam)
+			continue;
 
-        if (g_Settings.bShowBoxes)
+		if (!g_Settings.bEspPTeam && pPlayerEntity->GetTeam() == localTeam)
+			continue;
+
+
+        if (g_Settings.bEspPBoxes)
             this->RenderBox(pPlayerEntity);
 
-        if (g_Settings.bShowNames)
+        if (g_Settings.bEspPName)
             this->RenderName(pPlayerEntity, it);
 
-        if (g_Settings.bShowWeapons)
+        if (g_Settings.bEspPWeapon)
             this->RenderWeaponName(pPlayerEntity);
     }
 }

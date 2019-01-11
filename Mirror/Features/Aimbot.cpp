@@ -24,7 +24,7 @@ C_BaseEntity *target;
 void Aimbot::DoAimbot()
 {
 	// Is Aimbot on?
-	if (!g_Settings.bEnableAimbot)
+	if (!g_Settings.bAimbotEnable)
 		return;
 	
 	// Check if player is in game
@@ -39,7 +39,7 @@ void Aimbot::DoAimbot()
 
 	// Get some other variables
 	auto weapon = g::pLocalEntity->GetActiveWeapon();
-	int bestHitbox = Hitboxes::HITBOX_NECK;
+	int bestHitbox = 7;
 
 	bool isAttacking = (g::pCmd->buttons & IN_ATTACK);
 	if (!isAttacking)
@@ -60,12 +60,7 @@ void Aimbot::DoAimbot()
 		return;
 
 	// TODO: Custom hitbox selection
-	if (weapon->isRifle())
-		bestHitbox = 8;
-	else if (weapon->isPistol())
-		bestHitbox = 8; //Hitboxes::HITBOX_NECK;
-	else if (weapon->isSniper())
-		bestHitbox = 8; // Hitboxes::HITBOX_CHEST;
+	bestHitbox = getHitbox(weapon);
 
 	// Let's check if wee can see the player, if we can, we aim.
 	if (g::pLocalEntity->CanSeePlayer(target, target->GetBonePos(bestHitbox)))
@@ -108,7 +103,7 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 				continue;
 
 			// TODO: Add fov based on settings / weapon here
-			weaponFov = g_Settings.bAimbotFov;
+			weaponFov = getFov(weapon);
 
 			// Get positions from me and target
 			Vector myPos = g::pLocalEntity->GetBonePos(8);
@@ -151,6 +146,44 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 		return g_pEntityList->GetClientEntity(g::bestTarget);
 	else
 		return target;
+}
+
+float Aimbot::getFov(C_BaseCombatWeapon* weapon) {
+	if (weapon->isSniper())
+		return g_Settings.bAimbotFovSniper;
+	if (weapon->isRifle())
+		return g_Settings.bAimbotFovRifle;
+	if (weapon->isPistol())
+		return g_Settings.bAimbotFovPistol;
+	return g_Settings.bAimbotFovRifle;
+}
+
+float Aimbot::getSmooth(C_BaseCombatWeapon* weapon) {
+	if (weapon->isSniper())
+		return g_Settings.bAimbotSmoothSniper;
+	if (weapon->isRifle())
+		return g_Settings.bAimbotSmoothRifle;
+	if (weapon->isPistol())
+		return g_Settings.bAimbotSmoothPistol;
+	return g_Settings.bAimbotFovRifle;
+}
+
+int Aimbot::getHitbox(C_BaseCombatWeapon* weapon) {
+	int curSelected;
+	if (weapon->isSniper())
+		curSelected = g_Settings.bAimbotHitboxSniper;
+	if (weapon->isRifle())
+		curSelected = g_Settings.bAimbotHitboxRifle;
+	if (weapon->isPistol())
+		curSelected = g_Settings.bAimbotHitboxSniper;
+
+	switch (curSelected)
+	{
+	case 1: return 8;
+	case 2: return 4;
+	case 3: return 6;
+	default: return 8;
+	}
 }
 
 void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
@@ -202,11 +235,11 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 	QAngle finalAngle;
 
 	// TODO: Custom smoothing based on settings / weapon here
-	auto currentSmooth = g_Settings.bAimbotSmooth;
+	auto currentSmooth = getSmooth(weapon);
 
 	finalAngle = pCmd->viewangles - deltaAngle / currentSmooth;
 	Utils::ClampViewAngles(finalAngle);
-	auto currentFov = g_Settings.bAimbotFov;
+	auto currentFov = getFov(weapon);
 
 	if (fov <= currentFov)
 	{

@@ -38,8 +38,8 @@ void Settings::Initialize(MenuMain* pMenuObj)
 void Settings::SaveSettings(const std::string& strFileName, MenuMain* pMenuObj)
 {
     /* Loop through menu content and get its values */
-    std::function<void(MenuMain* /*, Parent pointer for sections in cfgFile*/)> loopChildSettings;
-    loopChildSettings = [&loopChildSettings](MenuMain* pMenuObj/*, Parent/section pointer for sections in cfgFile*/) -> void
+    std::function<void(MenuMain*, ObjectPtr)> loopChildSettings;
+    loopChildSettings = [&loopChildSettings](MenuMain* pMenuObj, ObjectPtr pParent) -> void
     {
         /* Replaces spaces with underscores, useful with xml parsing, can be deleted otherwise. */
         auto fixedSpaces = [](std::string str) -> std::string
@@ -62,7 +62,7 @@ void Settings::SaveSettings(const std::string& strFileName, MenuMain* pMenuObj)
             case MST::TYPE_WINDOW:
                 {
                     /* Recurrent call so we save settings for all of the child objects. */
-                    loopChildSettings(it.get()/*, parentElement*/);
+                    loopChildSettings(it.get(), it->GetParent());
                     break;
                 }
             case MST::TYPE_SECTION:
@@ -71,7 +71,7 @@ void Settings::SaveSettings(const std::string& strFileName, MenuMain* pMenuObj)
                     * Create section inside your file to which you will assign child objects (child elements, w/e)
                     * Then loop through child objects and save them. You can use it->strLabel to get section name.
                     */
-                    loopChildSettings(it.get()/*, SectionElement*/);
+                    loopChildSettings(it.get(), it->GetThis());
                     break;
                 }
             case MST::TYPE_CHECKBOX:
@@ -96,7 +96,7 @@ void Settings::SaveSettings(const std::string& strFileName, MenuMain* pMenuObj)
             }
         }
     };
-    loopChildSettings(pMenuObj/*, rootElement*/); /* Cant inline, drops an error */
+    //loopChildSettings(pMenuObj, ); /* Cant inline, drops an error */
 }
 
 void Settings::LoadSettings(const std::string& strFileName, MenuMain* pMenuObj)

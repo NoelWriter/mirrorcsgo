@@ -27,16 +27,36 @@ public:
 
     bool  bCheatActive  = true;
     bool  bMenuOpened   = false;
-    bool  bBhopEnabled  = false;
-    bool  bShowBoxes    = false;
-    bool  bShowNames    = false;
-    bool  bShowWeapons  = false;
+	bool  bBhopEnabled	= false;
+
+	//ESP
+	bool  bEspEnable	= false;
+	bool  bEspPEnemy	= false;
+	bool  bEspPTeam     = false;
+    bool  bEspPBoxes    = false;
+    bool  bEspPName		= false;
+    bool  bEspPWeapon	= false;
 
 	//Aimbot
-	bool  bEnableAimbot = false;
-	float bAimbotFov = 5.f;
-	float bAimbotSmooth = 5.f;
-	int   bAimbotHitbox = 1;
+	bool  bAimbotEnable = false;
+	bool  bAimbotTab1	= true;
+	bool  bAimbotTab2	= false;
+	bool  bAimbotTab3	= false;
+
+	//Rifle
+	float bAimbotFovRifle		= 5.f;
+	float bAimbotSmoothRifle	= 5.f;
+	int   bAimbotHitboxRifle	= 0;
+
+	//Sniper
+	float bAimbotFovSniper		= 5.f;
+	float bAimbotSmoothSniper	= 5.f;
+	int   bAimbotHitboxSniper	= 2;
+
+	//Pistol
+	float bAimbotFovPistol		= 5.f;
+	float bAimbotSmoothPistol	= 5.f;
+	int   bAimbotHitboxPistol	= 0;
 };
 
 extern Settings g_Settings;

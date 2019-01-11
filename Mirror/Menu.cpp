@@ -3,21 +3,30 @@
 
 
 void Detach() { g_Settings.bCheatActive = false; }
-
+void showRifles() { g_Settings.bAimbotTab1 = true; g_Settings.bAimbotTab2 = false;}
 
 void MenuMain::Initialize()
 {
     /* Create our main window (Could have multiple if you'd create vec. for it)  */
-    auto mainWindow = std::make_shared<Window>("Mirror", SSize(600, 350), g_Fonts.pFontTahoma8, g_Fonts.pFontTahoma8); //Width - Height
+    auto mainWindow = std::make_shared<Window>("Mirror", SSize(600, 400), g_Fonts.pFontTahoma8, g_Fonts.pFontTahoma8); //Width - Height
     {
 		auto tab1 = std::make_shared<Tab>("Aimbot", 1, mainWindow);
 		{
-			auto sectPlayer = tab1->AddSection("Aimbot Settings", 1.f);
+			auto sectAimbotMain = tab1->AddSection("Aimbot Settings", 0.5f);
 			{
-				sectPlayer->AddCheckBox("Enable", &g_Settings.bEnableAimbot);
-				sectPlayer->AddSlider("Fov", &g_Settings.bAimbotFov, 0.1f, 45);
-				sectPlayer->AddSlider("Smooth", &g_Settings.bAimbotSmooth, 1, 30);
-				sectPlayer->AddCombo("Hitbox", &g_Settings.bAimbotHitbox, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectAimbotMain->AddCheckBox("Enable", &g_Settings.bAimbotEnable);
+			}
+			auto sectWeapon = tab1->AddSection("Rifle Settings", 0.5f);
+			{
+				sectWeapon->AddSlider("Rifle Fov", &g_Settings.bAimbotFovRifle, 0.1f, 45);
+				sectWeapon->AddSlider("Rifle Smooth", &g_Settings.bAimbotSmoothRifle, 1, 30);
+				sectWeapon->AddCombo("Hitbox", &g_Settings.bAimbotHitboxRifle, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddSlider("Sniper Fov", &g_Settings.bAimbotFovSniper, 0.1f, 45);
+				sectWeapon->AddSlider("Sniper smooth", &g_Settings.bAimbotSmoothSniper, 1, 30);
+				sectWeapon->AddCombo("Hitbox", &g_Settings.bAimbotHitboxSniper, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddSlider("Pistol Fov", &g_Settings.bAimbotFovPistol, 0.1f, 45);
+				sectWeapon->AddSlider("Pistol Smooth", &g_Settings.bAimbotSmoothPistol, 1, 30);
+				sectWeapon->AddCombo("Hitbox", &g_Settings.bAimbotHitboxPistol, std::vector<std::string>{ "Head", "Stomach", "Chest" });
 			}
 		}
 		mainWindow->AddChild(tab1);
@@ -25,9 +34,16 @@ void MenuMain::Initialize()
 		{
 			auto sectPlayer = tab2->AddSection("Player", 1.f);
 			{
-				sectPlayer->AddCheckBox("Boxes", &g_Settings.bShowBoxes);
-				sectPlayer->AddCheckBox("Weapons", &g_Settings.bShowWeapons);
-				sectPlayer->AddCheckBox("Names", &g_Settings.bShowNames);
+				sectPlayer->AddCheckBox("Enable", &g_Settings.bEspEnable);
+				sectPlayer->AddCheckBox("Show Enemy", &g_Settings.bEspPEnemy);
+				sectPlayer->AddCheckBox("Show Team", &g_Settings.bEspPTeam);
+				sectPlayer->AddCheckBox("Boxes", &g_Settings.bEspPBoxes);
+				sectPlayer->AddCheckBox("Weapons", &g_Settings.bEspPWeapon);
+				sectPlayer->AddCheckBox("Names", &g_Settings.bEspPName);
+			}
+			auto sectWorld = tab2->AddSection("World", 1.f);
+			{
+
 			}
 		}
 		mainWindow->AddChild(tab2);

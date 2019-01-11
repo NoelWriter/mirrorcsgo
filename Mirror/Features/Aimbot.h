@@ -8,6 +8,9 @@ class Aimbot
 public:
 	void Aimbot::DoAimbot();
 	C_BaseEntity * GetBestTarget(Vector & outBestPos);
+	float getFov(C_BaseCombatWeapon * weapon);
+	float getSmooth(C_BaseCombatWeapon * weapon);
+	int getHitbox(C_BaseCombatWeapon * weapon);
 	void AimAt(CUserCmd * pCmd, C_BaseEntity * pEnt, int hitbox);
 	float Get3D_Distance(Vector src, Vector dst);
 	void MakeVector(QAngle angle, Vector & vector);
