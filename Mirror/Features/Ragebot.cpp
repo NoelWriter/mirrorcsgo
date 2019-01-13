@@ -1,53 +1,13 @@
 #include "Ragebot.h"
-#include "Aimbot.h"
 #include "Autowall.h"
-#include <Windows.h>
-#include "..\Utils\Utils.h"
-#include "..\Utils\GlobalVars.h"
-#include "..\Hooks.h"
-#include "..\SDK\Studio.hpp"
-#include "..\Utils\Interfaces.h"
-#include "Backtrack.h"
+#include "Aimbot.h"
 
-Ragebot g_Ragebot;
+Ragebot g_Ragebots;
+RagebotInit g_Ragebot;
 
 // Movefix variables
 float m_oldforward2, m_oldsidemove2;
 QAngle m_oldangle2;
-
-void Ragebot::DoRagebot()
-{
-	// Is Ragebot on?
-	if (!g_Settings.bRagebotEnable || g_Settings.bAimbotEnable)
-		return;
-
-	// Check if player is in game
-	if (!g::pLocalEntity || !g_pEngine->IsInGame())
-		return;
-
-	// Check if player is alive
-	if (!g::pLocalEntity
-		|| g::pLocalEntity->IsDormant()
-		|| !g::pLocalEntity->IsAlive())
-		return;
-
-	// Get some other variables
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
-
-	C_BaseEntity* bestTarget = nullptr;
-	Vector hitboxPos;
-
-	GetBestTarget(g::pCmd, bestTarget);
-
-	if (!bestTarget)
-		return;
-
-	if (!g_Ragebot.Hitscan(bestTarget, hitboxPos));
-	return;
-
-	AimAt(g::pCmd, bestTarget, hitboxPos);
-	AutoShoot(g::pCmd);
-}
 
 bool Ragebot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, Vector hitboxPos)
 {
@@ -105,8 +65,8 @@ float Ragebot::Hitchance(C_BaseCombatWeapon* pWeapon, float hitChance)
 	return hitchance;
 }
 
-bool TargetIsLocked = false;
-C_BaseEntity* lockedTarget;
+bool TargetIsLocked2 = false;
+C_BaseEntity* lockedTarget2;
 
 bool Ragebot::GetBestTarget(CUserCmd* pCmd, C_BaseEntity* outBestTarget)
 {
@@ -116,7 +76,7 @@ bool Ragebot::GetBestTarget(CUserCmd* pCmd, C_BaseEntity* outBestTarget)
 	C_BaseEntity* bestTarget = nullptr;
 
 	// Check if we have a locket target
-	if (TargetIsLocked && TargetMeetsRequirments(lockedTarget))
+	if (TargetIsLocked2 && TargetMeetsRequirments(lockedTarget2))
 		findNewTarget = false;
 
 	if (findNewTarget)
@@ -140,16 +100,16 @@ bool Ragebot::GetBestTarget(CUserCmd* pCmd, C_BaseEntity* outBestTarget)
 		}
 		if (bestTarget)
 		{
-			TargetIsLocked = true;
-			lockedTarget = bestTarget;
+			TargetIsLocked2 = true;
+			lockedTarget2 = bestTarget;
 		}
 	}
 
-	outBestTarget = lockedTarget;
-	if (!lockedTarget)
+	outBestTarget = lockedTarget2;
+	if (!lockedTarget2)
 		return false;
 
-	if (lockedTarget)
+	if (lockedTarget2)
 		true;
 }
 
@@ -273,4 +233,38 @@ bool Ragebot::Hitscan(C_BaseEntity* pTarget, Vector& hitboxPos)
 
 	hitboxPos = bestHitboxPos;
 	return hasPenetratedWall;
+}
+
+void RagebotInit::DoRagebot(CUserCmd* pCmd)
+{
+	// Is Ragebot on?
+	if (!g_Settings.bRagebotEnable || g_Settings.bAimbotEnable)
+		return;
+
+	// Check if player is in game
+	if (!g::pLocalEntity || !g_pEngine->IsInGame())
+		return;
+
+	// Check if player is alive
+	if (!g::pLocalEntity
+		|| g::pLocalEntity->IsDormant()
+		|| !g::pLocalEntity->IsAlive())
+		return;
+
+	// Get some other variables
+	auto weapon = g::pLocalEntity->GetActiveWeapon();
+
+	C_BaseEntity* bestTarget = nullptr;
+	Vector hitboxPos;
+
+	g_Ragebots.GetBestTarget(pCmd, bestTarget);
+
+	if (!bestTarget)
+		return;
+
+	if (!g_Ragebots.Hitscan(bestTarget, hitboxPos));
+	return;
+
+	g_Ragebots.AimAt(pCmd, bestTarget, hitboxPos);
+	g_Ragebots.AutoShoot(pCmd);
 }

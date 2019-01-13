@@ -63,6 +63,7 @@ void Hooks::Restore()
         g_Hooks.pClientModeHook->Unhook(vtable_indexes::createMove);
         g_Hooks.pSurfaceHook->Unhook(vtable_indexes::lockCursor);
 		g_Hooks.pRenderViewHook->Unhook(vtable_indexes::sceneend);
+		g_Hooks.pModelRenderHook->Unhook(vtable_indexes::drawmodelexecute);
 
 
         SetWindowLongPtr(g_Hooks.hCSGOWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_Hooks.pOriginalWNDProc));
@@ -98,17 +99,12 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
     engine_prediction::RunEnginePred();
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//								   Ragebot
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	g_Ragebot.DoRagebot();
-
-    // run shit in enginepred
-    engine_prediction::EndEnginePred();
-
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//								   Aimbot
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	g_Aimbot.DoAimbot();
+
+    // run shit in enginepred
+    engine_prediction::EndEnginePred();
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//								   Backtrack

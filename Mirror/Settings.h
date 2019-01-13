@@ -67,6 +67,8 @@ public:
 	float bRagebotFov			= 1;
 	bool  bRagebotAutoFire		= false;
 	float bRagebotMinDamage		= 1;
+	bool  bRagebotSilent		= false;
+	bool  bRagebotAutowall      = false;
 };
 
 extern Settings g_Settings;

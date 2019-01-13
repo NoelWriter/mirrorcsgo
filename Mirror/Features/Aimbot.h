@@ -7,7 +7,12 @@ class Aimbot
 {
 public:
 	void Aimbot::DoAimbot();
+	void DoRageAimbot(CUserCmd * pCmd);
+	void DoLegitAimbot(CUserCmd * pCmd);
+	bool CanHitTarget(C_BaseEntity * pTarget);
 	C_BaseEntity * GetBestTarget(Vector & outBestPos);
+	bool AutoShoot(CUserCmd * pCmd, C_BaseEntity * BestTarget);
+	float Hitchance(C_BaseCombatWeapon * pWeapon, float hitChance);
 	float getFov(C_BaseCombatWeapon * weapon);
 	float getSmooth(C_BaseCombatWeapon * weapon);
 	int getHitbox(C_BaseCombatWeapon * weapon);

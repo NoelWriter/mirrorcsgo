@@ -6,6 +6,7 @@
 #include "..\SDK\Studio.hpp"
 #include "..\Utils\Interfaces.h"
 #include "Backtrack.h"
+#include "Autowall.h"
 
 // Define some constant variables
 #define PI 3.14159265358979323846264338327f
@@ -21,12 +22,73 @@ QAngle m_oldangle;
 C_BaseEntity *target;
 
 
+
 void Aimbot::DoAimbot()
 {
-	// Is Aimbot on?
-	if (!g_Settings.bAimbotEnable || g_Settings.bRagebotEnable)
+
+	if (g_Settings.bAimbotEnable && g_Settings.bRagebotEnable)
 		return;
+
+	if (g_Settings.bRagebotEnable)
+	{
+		DoRageAimbot(g::pCmd);
+		return;
+	}
+
+	if (g_Settings.bAimbotEnable)
+	{
+		DoLegitAimbot(g::pCmd);
+		return;
+	}
 	
+}
+
+void Aimbot::DoRageAimbot(CUserCmd* pCmd) {
+	// Check if player is in game
+	if (!g::pLocalEntity || !g_pEngine->IsInGame())
+		return;
+
+	// Check if player is alive
+	if (!g::pLocalEntity
+		|| g::pLocalEntity->IsDormant()
+		|| !g::pLocalEntity->IsAlive())
+		return;
+
+	// Get some other variables
+	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	int bestHitbox = 8;
+
+	bool isAttacking = (g::pCmd->buttons & IN_ATTACK);
+	if (!isAttacking)
+		return;
+
+	StartMoveFix();
+
+	// Get a new target
+	Vector targetHitbox;
+	C_BaseEntity *target = GetBestTarget(targetHitbox);
+
+	// Check if target is Null
+	if (!target)
+		return;
+
+	if (g_Settings.bRagebotAutowall)
+		; //Implement Autowall
+	else
+		if (!g::pLocalEntity->CanSeePlayer(target, target->GetBonePos(bestHitbox)) && !CanHitTarget(target))
+			return;
+	
+
+	AimAt(pCmd, target, bestHitbox);
+
+	if (g_Settings.bRagebotAutoFire)
+		AutoShoot(pCmd, target);
+
+	EndMoveFix();
+}
+
+void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
+
 	// Check if player is in game
 	if (!g::pLocalEntity || !g_pEngine->IsInGame())
 		return;
@@ -69,6 +131,7 @@ void Aimbot::DoAimbot()
 	EndMoveFix();
 }
 
+
 bool isLocked = false;
 C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 {
@@ -102,8 +165,11 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 				|| pPlayerEntity->GetTeam() == localTeam)
 				continue;
 
-			// TODO: Add fov based on settings / weapon here
-			weaponFov = getFov(weapon);
+			// Get Fov for each weapon
+			if (g_Settings.bAimbotEnable)
+				weaponFov = getFov(weapon);
+			else
+				weaponFov = g_Settings.bRagebotFov;
 
 			// Get positions from me and target
 			Vector myPos = g::pLocalEntity->GetBonePos(8);
@@ -117,7 +183,6 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 
 			// Get Distance between me and target
 			auto currentDistance = Get3D_Distance(myPos, pEntPos);
-
 
 			// Check if the target is closer to the crosshair and if the target is in range of FOV
 			if (currentFov < weaponFov && (bestFov == NULL || currentFov < bestFov))
@@ -146,6 +211,70 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 		return g_pEntityList->GetClientEntity(g::bestTarget);
 	else
 		return target;
+}
+
+bool Aimbot::AutoShoot(CUserCmd* pCmd, C_BaseEntity* BestTarget)
+{
+	C_BaseCombatWeapon* pWeapon = g::pLocalEntity->GetActiveWeapon();
+
+	if (!pWeapon)
+		return false;
+
+	float flServerTime = g::pLocalEntity->GetTickBase() * g_pGlobalVars->intervalPerTick;
+	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(pCmd->buttons & IN_RELOAD);
+
+	if (Hitchance(pWeapon, 20) > 20 && !(pCmd->buttons & IN_ATTACK) && canShoot && CanHitTarget(BestTarget))
+		pCmd->buttons |= IN_ATTACK;
+	else
+		return false;
+
+	return true;
+}
+
+float Aimbot::Hitchance(C_BaseCombatWeapon* pWeapon, float hitChance)
+{
+	float hitchance = 101;
+	if (!pWeapon) return 0;
+	if (hitChance > 0)
+	{
+		float inaccuracy = pWeapon->GetInaccuracy();
+		if (inaccuracy == 0) inaccuracy = 0.0000001;
+		inaccuracy = 1 / inaccuracy;
+		hitchance = inaccuracy;
+	}
+	return hitchance;
+}
+
+bool Aimbot::CanHitTarget(C_BaseEntity* pTarget)
+{
+	Vector newShittyDistance;
+	bool hasPenetratedWall = false;
+	Vector bestHitboxPos;
+	auto pEnt = pTarget;
+	Vector hitboxPos;
+	studiohdr_t* pStudioHdr = g_pMdlInfo->GetStudiomodel2(pEnt->GetModel());
+	std::vector<int> hitboxes;
+	if (!pStudioHdr)
+		return false;
+
+	Vector vParent, vChild, sParent, sChild;
+	for (int j = 0; j < pStudioHdr->numbones; j++)
+	{
+		mstudiobone_t* pBone = pStudioHdr->GetBone(j);
+		if (pBone && (pBone->flags & BONE_USED_BY_HITBOX) && (pBone->parent != -1))
+		{
+			hitboxes.push_back(j);
+			hitboxes.push_back(pBone->parent);
+		}
+	}
+
+	for (const int &hitbox : hitboxes)
+	{
+		Vector pTargetPos = pTarget->GetBonePos(hitbox);
+		if (new_autowall.CanHit(pTargetPos))
+			return true;
+	}
+	return false;
 }
 
 float Aimbot::getFov(C_BaseCombatWeapon* weapon) {
@@ -216,7 +345,7 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 	float curWeaponFov = getFov(g::pLocalEntity->GetActiveWeapon());
 
 
-	if (g_Settings.bAimbotBacktrack)
+	if (g_Settings.bAimbotBacktrack && g_Settings.bAimbotEnable)
 	{
 		// Loop through backtracking ticks
 		for (int i = 0; i < g_Settings.bAimbotBacktrackTicks; i++)
@@ -270,15 +399,29 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 	QAngle finalAngle;
 
 	// TODO: Custom smoothing based on settings / weapon here
-	auto currentSmooth = getSmooth(weapon);
+	float currentSmooth;
+	if (g_Settings.bAimbotEnable)
+		currentSmooth = getSmooth(weapon);
+	else
+		currentSmooth = 1.f;
+	
 
 	finalAngle = pCmd->viewangles - deltaAngle / currentSmooth;
 	Utils::ClampViewAngles(finalAngle);
-	auto currentFov = getFov(weapon);
+
+	float currentFov;
+		
+	if (g_Settings.bAimbotEnable)
+		currentFov = getFov(weapon);
+	else
+		currentFov = g_Settings.bRagebotFov;
 
 	if (fov <= currentFov)
 	{
-		g_pEngine->SetViewAngles(finalAngle);
+		if (!g_Settings.bRagebotSilent)
+		{
+			g_pEngine->SetViewAngles(finalAngle);
+		}
 		pCmd->viewangles = finalAngle;
 	}
 }

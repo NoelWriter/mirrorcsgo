@@ -11,5 +11,4 @@
 #include "Backtrack.h"
 #include "Aimbot.h"
 #include "Chams.h"
-#include "Ragebot.h"
 #include "Autowall.h"

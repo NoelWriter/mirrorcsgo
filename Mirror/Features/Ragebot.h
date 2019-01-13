@@ -3,10 +3,15 @@
 #include "..\Utils\GlobalVars.h"
 #include "..\Settings.h"
 
+class RagebotInit
+{
+public:
+	void DoRagebot(CUserCmd * pCmd);
+};
+
 class Ragebot
 {
 public:
-	void Ragebot::DoRagebot();
 	bool AimAt(CUserCmd * pCmd, C_BaseEntity * pEnt, Vector hitboxPos);
 	bool AutoShoot(CUserCmd * pCmd);
 	float Hitchance(C_BaseCombatWeapon * pWeapon, float hitChance);
@@ -19,4 +24,6 @@ public:
 	bool Hitscan(C_BaseEntity * pTarget, Vector & hitboxPos);
 };
 
-extern Ragebot g_Ragebot;
+
+extern RagebotInit g_Ragebot;
+extern Ragebot g_Ragebots;

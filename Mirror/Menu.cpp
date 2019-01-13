@@ -43,6 +43,8 @@ void MenuMain::Initialize()
 				sectRageAimbotMain->AddSlider("Fov", &g_Settings.bRagebotFov, 1, 360);
 				sectRageAimbotMain->AddCheckBox("Autofire", &g_Settings.bRagebotAutoFire);
 				sectRageAimbotMain->AddSlider("Minimum damage", &g_Settings.bRagebotMinDamage, 1, 100);
+				sectRageAimbotMain->AddCheckBox("Silent", &g_Settings.bRagebotSilent);
+				sectRageAimbotMain->AddCheckBox("Autowall", &g_Settings.bRagebotAutowall);
 			}
 			auto sectAntiAim = tab2->AddSection("Anti-Aim Settings", 1.f);
 			{
