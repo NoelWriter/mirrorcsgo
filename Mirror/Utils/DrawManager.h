@@ -52,6 +52,12 @@ public: // Function members
     void RectFilledGradientMultiColor(SPoint vecPos1, SPoint vecPos2, Color colTopLeft, Color colTopRight, Color colBottomLeft, Color colBottomRight) const;
     void RectFilledGradientMultiColor(int posx1, int posy1, int posx2, int posy2, Color colTopLeft, Color colTopRight, Color colBottomLeft, Color colBottomRight) const;
 
+	void DrawWave1(Vector loc, float radius, Color color);
+
+	void DrawBox(int x, int y, int w, int h, Color color);
+
+	void DrawFillBox(int x, int y, int w, int h, Color color);
+
     void String(SPoint vecPos, DWORD dwFlags, Color color, CD3DFont * pFont, const char * szText) const;
     void String(int posx, int posy, DWORD dwFlags, Color color, CD3DFont* pFont, const char* szText) const;
 
@@ -117,6 +123,14 @@ public:
 };
 extern Fonts g_Fonts;
 
+typedef struct D3DTLVERTEX
+{
+	float x;
+	float y;
+	float z;
+	float rhw;
+	D3DCOLOR dxColor;
+} *PD3DTLVERTEX;
 
 enum GradientType
 {

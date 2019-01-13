@@ -25,23 +25,27 @@ public:
     * The best would be if they'd get          *
     * initialized in the class itself.         */
 
-    bool  bCheatActive  = true;
-    bool  bMenuOpened   = false;
-	bool  bBhopEnabled	= false;
+    bool  bCheatActive			= true;
+    bool  bMenuOpened			= false;
+	bool  bBhopEnabled			= false;
 
 	//ESP
-	bool  bEspEnable	= false;
-	bool  bEspPEnemy	= false;
-	bool  bEspPTeam     = false;
-    bool  bEspPBoxes    = false;
-    bool  bEspPName		= false;
-    bool  bEspPWeapon	= false;
+	bool  bEspEnable			= false;
+	bool  bEspPEnemy			= false;
+	bool  bEspPTeam				= false;
+    bool  bEspPBoxes			= false;
+    bool  bEspPName				= false;
+    bool  bEspPWeapon			= false;
+	bool  bEspPBones			= false;
+	bool  bEspPChams			= false;
+
+	bool  bEspWRadar			= false;
+	bool  bEspWGrenade			= false;
 
 	//Aimbot
-	bool  bAimbotEnable = false;
-	bool  bAimbotTab1	= true;
-	bool  bAimbotTab2	= false;
-	bool  bAimbotTab3	= false;
+	bool  bAimbotEnable			= false;
+	bool  bAimbotBacktrack		= false;
+	int   bAimbotBacktrackTicks = 1;
 
 	//Rifle
 	float bAimbotFovRifle		= 5.f;
@@ -57,6 +61,12 @@ public:
 	float bAimbotFovPistol		= 5.f;
 	float bAimbotSmoothPistol	= 5.f;
 	int   bAimbotHitboxPistol	= 0;
+
+	//Ragebot
+	bool  bRagebotEnable		= false;
+	float bRagebotFov			= 1;
+	bool  bRagebotAutoFire		= false;
+	float bRagebotMinDamage		= 1;
 };
 
 extern Settings g_Settings;

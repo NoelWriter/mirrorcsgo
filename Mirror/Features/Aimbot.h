@@ -20,12 +20,5 @@ public:
 private:
 };
 
-
-class Ragebot
-{
-public:
-	bool Ragebot::Hitscan(C_BaseEntity* pTarget , Vector& hitboxPos);
-};
 extern Aimbot g_Aimbot;
 
-extern Ragebot g_Ragebot;

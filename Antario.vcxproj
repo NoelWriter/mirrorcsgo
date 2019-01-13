@@ -95,12 +95,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Mirror\Features\Aimbot.cpp" />
+    <ClCompile Include="Mirror\Features\Autowall.cpp" />
+    <ClCompile Include="Mirror\Features\Backtrack.cpp" />
+    <ClCompile Include="Mirror\Features\Chams.cpp" />
     <ClCompile Include="Mirror\Features\EnginePrediction.cpp" />
+    <ClCompile Include="Mirror\Features\Ragebot.cpp" />
     <ClCompile Include="Mirror\GUI\GUI.cpp" />
     <ClCompile Include="Mirror\Hooks.cpp" />
     <ClCompile Include="Mirror\DLLMain.cpp" />
     <ClCompile Include="Mirror\Menu.cpp" />
     <ClCompile Include="Mirror\Settings.cpp" />
+    <ClCompile Include="Mirror\Utils\CGrenadeAPI.cpp" />
     <ClCompile Include="Mirror\Utils\D3DFont.cpp" />
     <ClCompile Include="Mirror\Utils\DrawManager.cpp" />
     <ClCompile Include="Mirror\Utils\GlobalVars.cpp" />
@@ -111,9 +116,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mirror\Features\Aimbot.h" />
+    <ClInclude Include="Mirror\Features\Autowall.h" />
+    <ClInclude Include="Mirror\Features\Backtrack.h" />
+    <ClInclude Include="Mirror\Features\Chams.h" />
     <ClInclude Include="Mirror\Features\EnginePrediction.h" />
     <ClInclude Include="Mirror\Features\Features.h" />
     <ClInclude Include="Mirror\Features\Misc.h" />
+    <ClInclude Include="Mirror\Features\Ragebot.h" />
     <ClInclude Include="Mirror\GUI\GUI.h" />
     <ClInclude Include="Mirror\Hooks.h" />
     <ClInclude Include="Antario\Menu.h" />
@@ -122,7 +131,11 @@
     <ClInclude Include="Mirror\SDK\CEntity.h" />
     <ClInclude Include="Mirror\SDK\CInput.h" />
     <ClInclude Include="Mirror\SDK\ClientClass.h" />
+    <ClInclude Include="Mirror\SDK\IPhysics.h" />
+    <ClInclude Include="Mirror\SDK\IVModelInfoClient.hpp" />
+    <ClInclude Include="Mirror\SDK\IVModelRender.hpp" />
     <ClInclude Include="Mirror\SDK\Studio.hpp" />
+    <ClInclude Include="Mirror\Utils\CGrenadeAPI.h" />
     <ClInclude Include="Mirror\Utils\Color.h" />
     <ClInclude Include="Mirror\SDK\CPrediction.h" />
     <ClInclude Include="Mirror\SDK\Definitions.h" />
@@ -143,6 +156,7 @@
     <ClInclude Include="Mirror\Utils\DrawManager.h" />
     <ClInclude Include="Mirror\EventListener.h" />
     <ClInclude Include="Mirror\Utils\GlobalVars.h" />
+    <ClInclude Include="Mirror\Utils\ICvar.h" />
     <ClInclude Include="Mirror\Utils\Interfaces.h" />
     <ClInclude Include="Mirror\SDK\Recv.h" />
     <ClInclude Include="Mirror\SDK\Vector.h" />

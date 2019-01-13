@@ -7,6 +7,8 @@
 #include "EventListener.h"
 #include "SDK\CInput.h"
 #include "GUI\GUI.h"
+#include "SDK\IVModelRender.hpp"	
+#include "SDK\IVModelInfoClient.hpp"
 
 namespace vtable_indexes
 {
@@ -14,6 +16,8 @@ namespace vtable_indexes
 	constexpr auto present      = 17;
 	constexpr auto createMove   = 24;
 	constexpr auto lockCursor   = 67;
+	constexpr auto sceneend		= 9;
+	constexpr auto drawmodelexecute = 21;
 }
 
 class VMTHook;
@@ -33,6 +37,8 @@ public:
     static HRESULT  __stdcall   Reset     (IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters);
     static HRESULT  __stdcall   Present   (IDirect3DDevice9* pDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion);
     static LRESULT  __stdcall   WndProc   (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static void		__fastcall	SceneEnd  (void *pEcx, void *pEdx);
+	static void		__stdcall	DrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld);
 
 private:
     /*---------------------------------------------*/
@@ -42,6 +48,8 @@ private:
     std::unique_ptr<VMTHook> pD3DDevice9Hook;
     std::unique_ptr<VMTHook> pClientModeHook;
     std::unique_ptr<VMTHook> pSurfaceHook;
+	std::unique_ptr<VMTHook> pRenderViewHook;
+	std::unique_ptr<VMTHook> pModelRenderHook;
 
     /*---------------------------------------------*/
     /*-------------Hook prototypes-----------------*/
@@ -51,6 +59,8 @@ private:
     typedef void (__fastcall* LockCursor_t) (ISurface*, void*);
     typedef long (__stdcall*  Reset_t)      (IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
     typedef long (__stdcall*  Present_t)    (IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
+	typedef void (__thiscall *SceneEnd_t)	(void *pEcx);
+	using DrawModelExecute_t = void(__thiscall*)(IVModelRender*, IMatRenderContext*, const DrawModelState_t&, const ModelRenderInfo_t&, matrix3x4_t*);
 
 private:
     ui::MenuMain                   nMenu;

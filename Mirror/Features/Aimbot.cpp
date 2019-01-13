@@ -5,13 +5,13 @@
 #include "..\Hooks.h"
 #include "..\SDK\Studio.hpp"
 #include "..\Utils\Interfaces.h"
+#include "Backtrack.h"
 
 // Define some constant variables
 #define PI 3.14159265358979323846264338327f
 
 // Declare classes
 Aimbot g_Aimbot;
-Ragebot g_Ragebot;
 
 // Movefix variables
 float m_oldforward, m_oldsidemove;
@@ -24,7 +24,7 @@ C_BaseEntity *target;
 void Aimbot::DoAimbot()
 {
 	// Is Aimbot on?
-	if (!g_Settings.bAimbotEnable)
+	if (!g_Settings.bAimbotEnable || g_Settings.bRagebotEnable)
 		return;
 	
 	// Check if player is in game
@@ -179,9 +179,9 @@ int Aimbot::getHitbox(C_BaseCombatWeapon* weapon) {
 
 	switch (curSelected)
 	{
-	case 1: return 8;
-	case 2: return 4;
-	case 3: return 6;
+	case 0: return 8;
+	case 1: return 4;
+	case 2: return 6;
 	default: return 8;
 	}
 }
@@ -208,8 +208,43 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 		|| pEnt->IsImmune())
 		return;
 
+	Vector pHitboxServerDistance;
+	bool doBacktrack = false;
+
+	QAngle tempAimAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pEnt->GetBonePos(8));
+	float bestFov = get_fov(pCmd->viewangles, tempAimAngle);
+	float curWeaponFov = getFov(g::pLocalEntity->GetActiveWeapon());
+
+
+	if (g_Settings.bAimbotBacktrack)
+	{
+		// Loop through backtracking ticks
+		for (int i = 0; i < g_Settings.bAimbotBacktrackTicks; i++)
+		{
+			Vector pHitboxPos = headPositions[pEnt->EntIndex()][i].hitboxPos;
+			QAngle pHitboxAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pHitboxPos);
+
+			auto newFov = g_Aimbot.get_fov(g::pCmd->viewangles, pHitboxAngle);
+			if (headPositions[pEnt->EntIndex()][i].simtime <= g::pLocalEntity->GetSimulationTime() - 1)
+				continue;
+
+			// Is our fov closer to the tick we are currently itterating on?
+			if (newFov < curWeaponFov && newFov < bestFov)
+			{
+				bestFov = newFov;
+				doBacktrack = true;
+				pHitboxServerDistance = Vector(sqrt((pHitboxPos.x - pEnt->GetBonePos(8).x) * (pHitboxPos.x - pEnt->GetBonePos(8).x)), sqrt((pHitboxPos.y - pEnt->GetBonePos(8).y) * (pHitboxPos.y - pEnt->GetBonePos(8).y)), 0);
+			}
+		}
+	}
+	  
 	Vector actualHitBox = pEnt->GetBonePos(hitbox);
 	Vector myPos = g::pLocalEntity->GetEyePosition();
+
+	// If we have a better tick to aim at, move our target to that tick
+	if (doBacktrack)
+		actualHitBox -= pHitboxServerDistance;
+
 	Vector pEntPos = actualHitBox;
 
 	// Velocity Compensation

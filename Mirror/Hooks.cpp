@@ -2,7 +2,7 @@
 #include "Hooks.h"
 #include "Utils\Utils.h"
 #include "Features\Features.h"
-#include "Features\Aimbot.h"
+#include "SDK\IVModelRender.hpp"
 
 Misc     g_Misc;
 Hooks    g_Hooks;
@@ -35,13 +35,16 @@ void Hooks::Init()
     g_Hooks.pD3DDevice9Hook = std::make_unique<VMTHook>(reinterpret_cast<void*>(d3dDevice));
     g_Hooks.pClientModeHook = std::make_unique<VMTHook>(g_pClientMode);
     g_Hooks.pSurfaceHook	= std::make_unique<VMTHook>(g_pSurface);
+	g_Hooks.pRenderViewHook = std::make_unique<VMTHook>(g_RenderView);
+	g_Hooks.pModelRenderHook = std::make_unique<VMTHook>(g_pMdlRender);
 
     // Hook the table functions
     g_Hooks.pD3DDevice9Hook->Hook(vtable_indexes::reset,      Hooks::Reset);
     g_Hooks.pD3DDevice9Hook->Hook(vtable_indexes::present,    Hooks::Present);
     g_Hooks.pClientModeHook->Hook(vtable_indexes::createMove, Hooks::CreateMove);
     g_Hooks.pSurfaceHook   ->Hook(vtable_indexes::lockCursor, Hooks::LockCursor);
-
+	g_Hooks.pRenderViewHook->Hook(vtable_indexes::sceneend,   Hooks::SceneEnd);
+	g_Hooks.pModelRenderHook->Hook(vtable_indexes::drawmodelexecute, Hooks::DrawModelExecute);
 
     // Create event listener, no need for it now so it will remain commented.
     //const std::vector<const char*> vecEventNames = { "" };
@@ -59,6 +62,9 @@ void Hooks::Restore()
         g_Hooks.pD3DDevice9Hook->Unhook(vtable_indexes::present);
         g_Hooks.pClientModeHook->Unhook(vtable_indexes::createMove);
         g_Hooks.pSurfaceHook->Unhook(vtable_indexes::lockCursor);
+		g_Hooks.pRenderViewHook->Unhook(vtable_indexes::sceneend);
+
+
         SetWindowLongPtr(g_Hooks.hCSGOWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_Hooks.pOriginalWNDProc));
 
         g_pNetvars.reset();   /* Need to reset by-hand, global pointer so doesnt go out-of-scope */
@@ -86,22 +92,28 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
     if (!g::pLocalEntity)
         return oCreateMove;
 
-
     g_Misc.OnCreateMove();
-
 
     // run shit outside enginepred
     engine_prediction::RunEnginePred();
 
-	
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//								   Aimbot
+	//								   Ragebot
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	g_Aimbot.DoAimbot();
+	g_Ragebot.DoRagebot();
 
     // run shit in enginepred
     engine_prediction::EndEnginePred();
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	//								   Aimbot
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	g_Aimbot.DoAimbot();
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	//								   Backtrack
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	backtracking->legitBackTrack(pCmd);
 
     return false;
 }
@@ -183,6 +195,74 @@ HRESULT __stdcall Hooks::Present(IDirect3DDevice9* pDevice, const RECT* pSourceR
     return oPresent(pDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
 
+float colorRed[3] = { 1, 0 ,0 };
+float colorBlue[3] = { 0, 0 ,1 };
+
+void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
+{
+	static auto oSceneEnd = g_Hooks.pRenderViewHook->GetOriginal<SceneEnd_t>(9);
+
+	if (!g::pLocalEntity || !g_pEngine->IsConnected() || !g_pEngine->IsInGame())
+		return;
+
+	Vector oldOrigin;
+	QAngle oldAngs;
+	static IMaterial* norm = CreateMaterial(false, true, false);
+	static IMaterial* flatnorm = CreateMaterial(false, false, false);
+	static IMaterial* wirenorm = CreateMaterial(false, true, true);
+	static IMaterial* znorm = CreateMaterial(true, true, false);
+	static IMaterial* zflatnorm = CreateMaterial(true, false, false);
+	static IMaterial* zwirenorm = CreateMaterial(true, true, true);
+
+	if (g_Settings.bEspPChams && g::pLocalEntity && g_pEngine->IsConnected() && g_pEngine->IsInGame())
+	{
+		auto localTeam = g::pLocalEntity->GetTeam();
+
+		for (int it = 1; it <= g_pEngine->GetMaxClients(); ++it)
+		{
+			C_BaseEntity* pEntity = g_pEntityList->GetClientEntity(it);
+			if (!pEntity
+				|| pEntity->IsDormant()
+				|| pEntity == g::pLocalEntity
+				|| !pEntity->IsAlive())
+				continue;
+
+			if (!norm || !flatnorm || !wirenorm || !znorm || !zflatnorm || !zwirenorm)
+				return;
+
+			if (!pEntity || !g::pLocalEntity)
+				return;
+
+			if (pEntity->IsAlive() && pEntity->GetHealth() > 0 && pEntity->GetTeam() != g::pLocalEntity->GetTeam())
+			{
+				if (true)
+				{
+					g_RenderView->SetColorModulation(colorRed);
+					g_pMdlRender->ForcedMaterialOverride(zflatnorm);
+					//pEntity->draw_model(0x00000001, 255);
+				}
+				g_RenderView->SetColorModulation(colorBlue);
+				g_pMdlRender->ForcedMaterialOverride(flatnorm);
+				//pEntity->draw_model(0x00000001, 255);
+
+				g_pMdlRender->ForcedMaterialOverride(nullptr);
+			}
+			g_pMdlRender->ForcedMaterialOverride(nullptr);
+		}
+		return oSceneEnd(pEcx);
+	}
+	return oSceneEnd(pEcx);
+}
+
+void __stdcall Hooks::DrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld)
+{
+	static auto oDME = g_Hooks.pModelRenderHook->GetOriginal<DrawModelExecute_t>(21);
+
+	if (!g::pLocalEntity || !g_pEngine->IsInGame() || !g_pEngine->IsConnected())
+		oDME(g_pMdlRender, ctx, state, pInfo, pCustomBoneToWorld);
+
+	oDME(g_pMdlRender, ctx, state, pInfo, pCustomBoneToWorld);
+}
 
 LRESULT Hooks::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

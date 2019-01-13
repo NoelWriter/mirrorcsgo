@@ -1,5 +1,6 @@
 #include "Interfaces.h"
 #include "Utils.h"
+#include "ICvar.h"
 
 #include "..\SDK\IClientMode.h"
 #include "..\SDK\IBaseClientDll.h"
@@ -8,6 +9,9 @@
 #include "..\SDK\CPrediction.h"
 #include "..\SDK\IGameEvent.h"
 #include "..\SDK\ISurface.h"
+#include "..\SDK\IVModelInfoClient.hpp"
+#include "..\SDK\IVModelRender.hpp"
+#include "..\SDK\IPhysics.h"
 
 // Initializing global interfaces
 
@@ -21,8 +25,13 @@ IMoveHelper*        g_pMoveHelper   = nullptr;
 CGlobalVarsBase*    g_pGlobalVars   = nullptr;
 IGameEventManager2* g_pEventManager = nullptr;
 ISurface*           g_pSurface      = nullptr;
-IEngineTrace*		g_pEngineTrace = nullptr;
-
+IEngineTrace*		g_pEngineTrace	= nullptr;
+IVModelInfoClient*  g_pMdlInfo		= nullptr;
+CVRenderView*		g_RenderView	= nullptr;
+CMaterialSystem*    g_MaterialSystem= nullptr;
+IVModelRender*      g_pMdlRender    = nullptr;
+IPhysicsSurfaceProps* g_pPhysSurface= nullptr;
+ICVar*				  g_pCVar		= nullptr;
 
 namespace interfaces
 {
@@ -53,5 +62,11 @@ namespace interfaces
         g_pEventManager = CaptureInterface<IGameEventManager2>("engine.dll", "GAMEEVENTSMANAGER002");				// Get IGameEventManager2
         g_pSurface      = CaptureInterface<ISurface>("vguimatsurface.dll", "VGUI_Surface031");						// Get ISurface
 		g_pEngineTrace  = CaptureInterface<IEngineTrace>("engine.dll", "EngineTraceClient004"); // Get EngineTrace
+		g_pMdlInfo		= CaptureInterface<IVModelInfoClient>("engine.dll", "VModelInfoClient004"); // GetModelInfo
+		g_RenderView	= CaptureInterface<CVRenderView>("engine.dll", "VEngineRenderView014");
+		g_MaterialSystem= CaptureInterface<CMaterialSystem>("materialsystem.dll", "VMaterialSystem080");
+		g_pMdlRender	= CaptureInterface<IVModelRender>("engine.dll", "VEngineModel016");
+		g_pPhysSurface	= CaptureInterface<IPhysicsSurfaceProps>("vphysics.dll", "VPhysicsSurfaceProps001");
+		g_pCVar			= CaptureInterface<ICVar>("vstdlib.dll", "VEngineCvar007");
     }
 }

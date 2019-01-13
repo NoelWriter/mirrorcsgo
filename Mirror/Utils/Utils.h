@@ -154,6 +154,21 @@ public:
 		vecAng.z = 0.0f;
 	}
 
+	static void AngleVectors( const Vector &vAngles , Vector& vForward )
+	{
+		float	sp , sy , cp , cy;
+
+		sy = sin( DEG2RAD( vAngles[1] ) );
+		cy = cos( DEG2RAD( vAngles[1] ) );
+
+		sp = sin( DEG2RAD( vAngles[0] ) );
+		cp = cos( DEG2RAD( vAngles[0] ) );
+
+		vForward.x = cp*cy;
+		vForward.y = cp*sy;
+		vForward.z = -sp;
+	}
+
 	static void VectorAngles(const Vector& forward, QAngle &angles)
 	{
 		float tmp, yaw, pitch;

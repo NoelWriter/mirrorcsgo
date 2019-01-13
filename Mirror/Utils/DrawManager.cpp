@@ -4,6 +4,9 @@
 Fonts       g_Fonts;
 DrawManager g_Render;
 
+#define D3DFVF_CUSTOM_TEXT ( D3DFVF_XYZ | D3DFVF_DIFFUSE )
+#define D3DFVF_CUSTOM_VERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE )
+
 struct Vertex
 {
     float x, y, z, rhw;
@@ -261,6 +264,31 @@ void DrawManager::RectFilledGradientMultiColor(int posx1, int posy1, int posx2, 
     this->pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &vert, sizeof(Vertex));
 }
 
+void DrawManager::DrawWave1(Vector loc, float radius, Color color)
+{
+	static float Step = M_PI * 3.0f / 40;
+	Vector prev;
+	for (float lat = 0; lat <= M_PI * 3.0f; lat += Step)
+	{
+		float sin1 = sin(lat);
+		float cos1 = cos(lat);
+		float sin3 = sin(0.0);
+		float cos3 = cos(0.0);
+
+		Vector point1;
+		point1 = Vector(sin1 * cos3, cos1, sin1 * sin3) * radius;
+		Vector point3 = loc;
+		Vector Out;
+		point3 += point1;
+
+		if (Utils::WorldToScreen(point3, Out))
+		{
+			if (lat > 0.000)
+				this->Line(prev.x, prev.y, Out.x, Out.y, color);
+		}
+		prev = Out;
+	}
+}
 
 void DrawManager::String(SPoint vecPos, DWORD dwFlags, Color color, CD3DFont* pFont, const char* szText) const
 {

@@ -1,9 +1,10 @@
 #include "GUI\GUI.h"
 #include "Settings.h"
+#include "Utils/CGrenadeAPI.h"
 
 
-void Detach() { g_Settings.bCheatActive = false; }
-void showRifles() { g_Settings.bAimbotTab1 = true; g_Settings.bAimbotTab2 = false;}
+void Detach() { g_Settings.bCheatActive = false; };
+void updateGrenadeMap() { cGrenade.bUpdateGrenadeInfo(g_pEngine->GetLevelNameShort()); };
 
 void MenuMain::Initialize()
 {
@@ -15,24 +16,43 @@ void MenuMain::Initialize()
 			auto sectAimbotMain = tab1->AddSection("Aimbot Settings", 0.5f);
 			{
 				sectAimbotMain->AddCheckBox("Enable", &g_Settings.bAimbotEnable);
+				sectAimbotMain->AddCheckBox("Backtracking", &g_Settings.bAimbotBacktrack);
+				sectAimbotMain->AddSlider("Backtrack Ticks", &g_Settings.bAimbotBacktrackTicks, 1, 12);
 			}
 			auto sectWeapon = tab1->AddSection("Rifle Settings", 0.5f);
 			{
 				sectWeapon->AddSlider("Rifle Fov", &g_Settings.bAimbotFovRifle, 0.1f, 45);
 				sectWeapon->AddSlider("Rifle Smooth", &g_Settings.bAimbotSmoothRifle, 1, 30);
-				sectWeapon->AddCombo("Hitbox", &g_Settings.bAimbotHitboxRifle, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddCombo("Rifle Hitbox", &g_Settings.bAimbotHitboxRifle, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddDummy();
 				sectWeapon->AddSlider("Sniper Fov", &g_Settings.bAimbotFovSniper, 0.1f, 45);
 				sectWeapon->AddSlider("Sniper smooth", &g_Settings.bAimbotSmoothSniper, 1, 30);
-				sectWeapon->AddCombo("Hitbox", &g_Settings.bAimbotHitboxSniper, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddCombo("Sniper Hitbox", &g_Settings.bAimbotHitboxSniper, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddDummy();
 				sectWeapon->AddSlider("Pistol Fov", &g_Settings.bAimbotFovPistol, 0.1f, 45);
 				sectWeapon->AddSlider("Pistol Smooth", &g_Settings.bAimbotSmoothPistol, 1, 30);
-				sectWeapon->AddCombo("Hitbox", &g_Settings.bAimbotHitboxPistol, std::vector<std::string>{ "Head", "Stomach", "Chest" });
+				sectWeapon->AddCombo("Pistol Hitbox", &g_Settings.bAimbotHitboxPistol, std::vector<std::string>{ "Head", "Stomach", "Chest" });
 			}
 		}
 		mainWindow->AddChild(tab1);
-		auto tab2 = std::make_shared<Tab>("ESP", 2, mainWindow);
+		auto tab2 = std::make_shared<Tab>("Ragebot", 2, mainWindow);
 		{
-			auto sectPlayer = tab2->AddSection("Player", 1.f);
+			auto sectRageAimbotMain = tab2->AddSection("Aimbot Settings", 1.f);
+			{
+				sectRageAimbotMain->AddCheckBox("Enable", &g_Settings.bRagebotEnable);
+				sectRageAimbotMain->AddSlider("Fov", &g_Settings.bRagebotFov, 1, 360);
+				sectRageAimbotMain->AddCheckBox("Autofire", &g_Settings.bRagebotAutoFire);
+				sectRageAimbotMain->AddSlider("Minimum damage", &g_Settings.bRagebotMinDamage, 1, 100);
+			}
+			auto sectAntiAim = tab2->AddSection("Anti-Aim Settings", 1.f);
+			{
+
+			}
+		}
+		mainWindow->AddChild(tab2);
+		auto tab3 = std::make_shared<Tab>("ESP", 2, mainWindow);
+		{
+			auto sectPlayer = tab3->AddSection("Player", 1.f);
 			{
 				sectPlayer->AddCheckBox("Enable", &g_Settings.bEspEnable);
 				sectPlayer->AddCheckBox("Show Enemy", &g_Settings.bEspPEnemy);
@@ -40,21 +60,28 @@ void MenuMain::Initialize()
 				sectPlayer->AddCheckBox("Boxes", &g_Settings.bEspPBoxes);
 				sectPlayer->AddCheckBox("Weapons", &g_Settings.bEspPWeapon);
 				sectPlayer->AddCheckBox("Names", &g_Settings.bEspPName);
+				sectPlayer->AddCheckBox("Bones", &g_Settings.bEspPBones);
+				sectPlayer->AddCheckBox("Chams", &g_Settings.bEspPChams);
 			}
-			auto sectWorld = tab2->AddSection("World", 1.f);
+			auto sectWorld = tab3->AddSection("World", 1.f);
 			{
-
-			}
-		}
-		mainWindow->AddChild(tab2);
-		auto tab3 = std::make_shared<Tab>("Other", 1, mainWindow);
-		{
-			auto sectDetach = tab3->AddSection("", .5f);
-			{
-				sectDetach->AddButton("Detach", Detach);
+				sectWorld->AddCheckBox("Radar", &g_Settings.bEspWRadar);
+				sectWorld->AddCheckBox("Grenade Helper", &g_Settings.bEspWGrenade);
+				sectWorld->AddButton("Update Map", updateGrenadeMap);
 			}
 		}
 		mainWindow->AddChild(tab3);
+		auto tab4 = std::make_shared<Tab>("Other", 1, mainWindow);
+		{
+			auto sectMisc = tab4->AddSection("", .5f);
+			{
+				
+				sectMisc->AddCheckBox("Bhop", &g_Settings.bBhopEnabled);
+				sectMisc->AddDummy();
+				sectMisc->AddButton("Detach", Detach);
+			}
+		}
+		mainWindow->AddChild(tab4);
     }
     this->vecChildren.push_back(mainWindow);
 

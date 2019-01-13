@@ -8,3 +8,8 @@
 #include "EnginePrediction.h"
 #include "ESP.h"
 #include "Misc.h"
+#include "Backtrack.h"
+#include "Aimbot.h"
+#include "Chams.h"
+#include "Ragebot.h"
+#include "Autowall.h"

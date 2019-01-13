@@ -4,8 +4,11 @@
 #include "IClientEntityList.h"
 #include "..\Utils\Utils.h"
 #include "..\Utils\NetvarManager.h"
+#include "Vector.h"
+#include "Studio.hpp"
 #include "..\SDK\Studio.hpp"
 #include "..\SDK\IEngineTrace.hpp"
+#include "..\SDK\IVModelInfoClient.hpp"
 
 // class predefinition
 class C_BaseCombatWeapon;
@@ -114,16 +117,62 @@ public:
 			= reinterpret_cast<bool(__cdecl*) (Vector, Vector)>(
 				Utils::FindSignature(Utils::GetClientModule(), "55 8B EC 83 EC 08 8B 15 ? ? ? ? 0F 57 C0")
 				);
-		Vector vLocalOrigin = localPlayer->GetBonePos(6);
-		Vector vTargetOrigin = this->GetBonePos(6);
+		Vector vLocalOrigin = localPlayer->GetBonePos(8);
+		Vector vTargetOrigin = this->GetBonePos(8);
 
 		return LineGoesThroughSmoke(vLocalOrigin, vTargetOrigin);
+	}
+
+	IClientRenderable* GetRenderable()
+	{
+		return reinterpret_cast<IClientRenderable*>((DWORD)this + 0x4);
+	}
+
+	//int draw_model(int flags, uint8_t alpha) {
+	//	using fn = int(__thiscall*)(void*, int, uint8_t);
+	//	return call_vfunc< fn >(GetRenderable(), 9)(GetRenderable(), flags, alpha);
+	//}
+
+	bool hasHelmet()
+	{
+		static int m_bHasHelmet = g_pNetvars->GetOffset("DT_CSPlayer", "m_bHasHelmet");
+		return GetValue<bool>(m_bHasHelmet);
+	}
+
+	int GetArmor()
+	{
+		static int m_ArmorValue = g_pNetvars->GetOffset("DT_CSPlayer", "m_ArmorValue");
+		return GetValue<int>(m_ArmorValue);
+	}
+
+	bool hasDefuser()
+	{
+		static int m_bHasDefuser = g_pNetvars->GetOffset("DT_CSPlayer", "m_bHasDefuser");
+		return GetValue<bool>(m_bHasDefuser);
 	}
 
 	Vector GetVelocity()
 	{
 		static int m_vecVelocity = g_pNetvars->GetOffset("DT_BasePlayer", "localdata", "m_vecVelocity[0]");
 		return *(Vector*)((uintptr_t)this + m_vecVelocity);
+	}
+
+	float GetSimulationTime()
+	{
+		static int m_flSimulationTime = g_pNetvars->GetOffset("DT_BaseEntity", "m_flSimulationTime");
+		return GetValue<float>(m_flSimulationTime);
+	}
+
+
+	Vector GetAimPunchAngle()
+	{
+		static int m_aimPunchAngle = g_pNetvars->GetOffset("DT_BasePlayer", "m_aimPunchAngle");
+		return *(Vector*)(m_aimPunchAngle);
+	}
+
+	QAngle& GetAngles()
+	{
+		return Utils::CallVFunc<11, QAngle&>(this);
 	}
 
 	bool C_BaseEntity::CanSeePlayer(C_BaseEntity* player, const Vector& pos)
@@ -267,6 +316,11 @@ public:
 		default:
 			return false;
 		}
+	}
+
+	float GetInaccuracy()
+	{
+		return Utils::CallVFunc<471, float>(this);
 	}
 
     std::string GetName()
