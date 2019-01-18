@@ -101,7 +101,7 @@ void ESP::RenderWeaponName(C_BaseEntity* pEnt)
     if (!weapon)
         return;
 
-    auto strWeaponName = weapon->GetName();
+    auto strWeaponName = weapon->GetName(); // Crash 1
 
     strWeaponName.erase(0, 7);
     std::transform(strWeaponName.begin(), strWeaponName.end(), strWeaponName.begin(), ::toupper);
