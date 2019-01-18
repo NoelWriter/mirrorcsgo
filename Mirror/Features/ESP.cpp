@@ -23,7 +23,7 @@ void ESP::RenderBox(C_BaseEntity* pEnt)
                h  = int(std::roundf(vecScreenBottom.y - vecScreenOrigin.y)),
                w  = int(std::roundf(h * 0.25f));
 
-	auto boxColor = g::pLocalEntity->CanSeePlayer(pEnt, pEnt->GetEyePosition()) ? Color::Black() : Color::Red(); // && !pEnt->IsBehindSmoke(g::pLocalEntity) crashes
+	auto boxColor = Color::Black();//g::pLocalEntity->CanSeePlayer(pEnt, pEnt->GetBonePos(8)) ? Color::Black() : Color::Red(); // && !pEnt->IsBehindSmoke(g::pLocalEntity) crashes
 
 	//Bottom
 	g_Render.Line(sx - w, sy, sx - w * 0.5, sy, boxColor);

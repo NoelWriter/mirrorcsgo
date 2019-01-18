@@ -191,6 +191,12 @@ struct studiohdr_t
 		return (mstudiohitboxset_t*)(((byte*)this) + hitboxsetindex) + i;
 	}
 
+	mstudiohitboxset_t* pHitboxSet(int i)
+	{
+		if (i > numhitboxsets) return nullptr;
+		return (mstudiohitboxset_t*)((uint8_t*)this + hitboxsetindex) + i;
+	}
+
 	inline mstudiobbox_t* GetHitbox(int i, int set) const
 	{
 		mstudiohitboxset_t const* s = GetHitboxSet(set);

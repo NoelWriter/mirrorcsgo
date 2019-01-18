@@ -131,6 +131,7 @@
     <ClInclude Include="Mirror\SDK\CEntity.h" />
     <ClInclude Include="Mirror\SDK\CInput.h" />
     <ClInclude Include="Mirror\SDK\ClientClass.h" />
+    <ClInclude Include="Mirror\SDK\IEngineTrace.hpp" />
     <ClInclude Include="Mirror\SDK\IPhysics.h" />
     <ClInclude Include="Mirror\SDK\IVModelInfoClient.hpp" />
     <ClInclude Include="Mirror\SDK\IVModelRender.hpp" />

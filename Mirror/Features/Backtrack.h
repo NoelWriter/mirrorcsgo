@@ -17,12 +17,13 @@ class BackTrack
 {
 	int latest_tick;
 	bool IsTickValid(int tick);
-	void UpdateRecord(int i);
+
 public:
+
 	lbyRecords records[64];
-	bool RunLBYBackTrack(int i, CUserCmd* cmd, Vector& aimPoint);
 	void legitBackTrack(CUserCmd * cmd);
-	void Update(int tick_count);
+	void SaveRecord(C_BaseEntity * pEnt);
+	void RageBackTrack(CUserCmd * cmd, C_BaseEntity * pEnt);
 };
 
 inline Vector angle_vector(Vector meme)
@@ -52,9 +53,17 @@ inline float distance_point_to_line(Vector Point, Vector LineOrigin, Vector Dir)
 struct backtrackData {
 	float simtime;
 	Vector hitboxPos;
-	float lowerBodyYaw;
-	Vector velocity;
 };
 
-extern backtrackData headPositions[64][25];
+struct rageBacktrackData {
+	void SaveRecord(C_BaseEntity * pEnt);
+	float simtime;
+	Vector hitboxPos;
+	float lowerBodyYaw;
+	float velocity;
+};
+
+
+extern backtrackData l_SavedTicks[64][25];
+extern rageBacktrackData r_SavedTicks[64][25];
 extern BackTrack* backtracking;

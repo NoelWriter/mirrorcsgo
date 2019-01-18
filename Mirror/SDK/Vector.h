@@ -53,8 +53,10 @@ public:
     float x, y, z;
     Vector(void);
     Vector(float X, float Y, float Z);
-    void Init(float ix = 0.0f, float iy = 0.0f, float iz = 0.0f);
+	Vector(const float * clr);
+	void Init(float ix = 0.0f, float iy = 0.0f, float iz = 0.0f);
     bool IsValid() const;
+	bool IsNotNan() const;
     float operator[](int i) const;
     float& operator[](int i);
     inline void Zero();
@@ -85,6 +87,10 @@ public:
     inline float	DistTo(const Vector &vOther) const;
     inline float	DistToSqr(const Vector &vOther) const;
     float	Dot(const Vector& vOther) const;
+	void	VectorCrossProduct(const Vector & a, const Vector & b, Vector & result);
+	Vector	Cross(const Vector & vOther);
+	Vector	Normalized() const;
+	float	NormalizeToFloat() const;
     float	Length2D(void) const;
     float	Length2DSqr(void) const;
     void	MulAdd(const Vector& a, const Vector& b, float scalar);
@@ -96,11 +102,12 @@ public:
     Vector	operator/(const Vector& v) const;
     Vector	operator*(float fl) const;
     Vector	operator/(float fl) const;
+	Vector  operator+(float fl) const;
+	Vector  operator-(float fl) const;
     // Base address...
     float* Base();
     float const* Base() const;
 };
-
 //===============================================
 inline void Vector::Init(float ix, float iy, float iz)
 {
@@ -112,6 +119,14 @@ inline Vector::Vector(float X, float Y, float Z)
 {
     x = X; y = Y; z = Z;
     CHECK_VALID(*this);
+}
+
+//===============================================
+inline Vector::Vector(const float* clr)
+{
+	x = clr[0];
+	y = clr[1];
+	z = clr[2];
 }
 //===============================================
 inline Vector::Vector(void) { }
@@ -143,6 +158,16 @@ inline float Vector::operator[](int i) const
 {
     Assert((i >= 0) && (i < 3));
     return ((float*)this)[i];
+}
+
+inline bool Vector::IsValid() const
+{
+	return std::isfinite(x) && std::isfinite(y) && std::isfinite(z);
+}
+
+inline bool Vector::IsNotNan() const
+{
+	return std::isnan(x) && std::isnan(y) && std::isnan(z);
 }
 //===============================================
 inline bool Vector::operator==(const Vector& src) const
@@ -407,6 +432,19 @@ inline Vector Vector::operator/(float fl) const
     res.z = z / fl;
     return res;
 }
+
+//===============================================
+inline Vector Vector::operator+(float fl) const
+{
+	return Vector(x + fl, y + fl, z + fl);
+}
+
+//===============================================
+inline Vector Vector::operator-(float fl) const
+{
+	return Vector(x - fl, y - fl, z - fl);
+}
+
 //===============================================
 inline Vector Vector::operator/(const Vector& v) const
 {
@@ -421,6 +459,48 @@ inline float Vector::Dot(const Vector& vOther) const
     const Vector& a = *this;
 
     return(a.x*vOther.x + a.y*vOther.y + a.z*vOther.z);
+}
+
+inline void Vector::VectorCrossProduct(const Vector &a, const Vector &b, Vector &result)
+{
+	result.x = a.y*b.z - a.z*b.y;
+	result.y = a.z*b.x - a.x*b.z;
+	result.z = a.x*b.y - a.y*b.x;
+}
+
+inline Vector Vector::Cross(const Vector &vOther)
+{
+	Vector res;
+	VectorCrossProduct(*this, vOther, res);
+	return res;
+}
+
+inline Vector Vector::Normalized() const
+{
+	Vector res = *this;
+	float l = res.Length();
+	if (l != 0.0f) {
+		res /= l;
+	}
+	else {
+		res.x = res.y = res.z = 0.0f;
+	}
+	return res;
+}
+
+inline float Vector::NormalizeToFloat() const
+{
+	Vector res = *this;
+	float l = res.Length();
+	if (l != 0.0f)
+	{
+		res /= l;
+	}
+	else
+	{
+		res.x = res.y = res.z = 0.0f;
+	}
+	return l;
 }
 
 //-----------------------------------------------------------------------------
@@ -1258,6 +1338,8 @@ public:
     // No assignment operators either...
     QAngle& operator=(const QAngle& src);
 
+	QAngle& Normalize();
+
 #ifndef VECTOR_NO_SLOW_OPERATIONS
     // copy constructors
 
@@ -1322,6 +1404,49 @@ inline QAngle& QAngle::operator=(const QAngle &vOther)
     CHECK_VALID(vOther);
     x = vOther.x; y = vOther.y; z = vOther.z;
     return *this;
+}
+
+inline QAngle& QAngle::Normalize()
+{
+	auto x_rev = this->x / 360.f;
+	if (this->x > 180.f || this->x < -180.f)
+	{
+		x_rev = abs(x_rev);
+		x_rev = round(x_rev);
+
+		if (this->x < 0.f)
+			this->x = (this->x + 360.f * x_rev);
+
+		else
+			this->x = (this->x - 360.f * x_rev);
+	}
+
+	auto y_rev = this->y / 360.f;
+	if (this->y > 180.f || this->y < -180.f)
+	{
+		y_rev = abs(y_rev);
+		y_rev = round(y_rev);
+
+		if (this->y < 0.f)
+			this->y = (this->y + 360.f * y_rev);
+
+		else
+			this->y = (this->y - 360.f * y_rev);
+	}
+
+	auto z_rev = this->z / 360.f;
+	if (this->z > 180.f || this->z < -180.f)
+	{
+		z_rev = abs(z_rev);
+		z_rev = round(z_rev);
+
+		if (this->z < 0.f)
+			this->z = (this->z + 360.f * z_rev);
+
+		else
+			this->z = (this->z - 360.f * z_rev);
+	}
+	return *this;
 }
 
 //-----------------------------------------------------------------------------

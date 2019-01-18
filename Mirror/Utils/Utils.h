@@ -9,6 +9,7 @@
 #define INRANGE(x,a,b)   (x >= a && x <= b)
 #define GET_BYTE( x )    (GET_BITS(x[0]) << 4 | GET_BITS(x[1]))
 #define GET_BITS( x )    (INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
+#define PI 3.14159265358979323846f
 
 class Utils
 {
@@ -169,6 +170,69 @@ public:
 		vForward.z = -sp;
 	}
 
+	static float DistanceToRay(const Vector &pos, const Vector &rayStart, const Vector &rayEnd, float *along = nullptr, Vector *pointOnRay = nullptr)
+	{
+		Vector to = pos - rayStart;
+		Vector dir = rayEnd - rayStart;
+		float length = dir.NormalizeToFloat();
+
+		float rangeAlong = dir.Dot(to);
+		if (along)
+			*along = rangeAlong;
+
+		float range;
+
+		if (rangeAlong < 0.0f)
+		{
+			range = -(pos - rayStart).Length();
+
+			if (pointOnRay)
+				*pointOnRay = rayStart;
+		}
+		else if (rangeAlong > length)
+		{
+			range = -(pos - rayEnd).Length();
+
+			if (pointOnRay)
+				*pointOnRay = rayEnd;
+		}
+		else
+		{
+			// TFW it can't find the operator for some reason, hardcoded then :(
+			dir = Vector(rangeAlong * dir.x, rangeAlong * dir.y, rangeAlong * dir.z);
+			Vector onRay = rayStart + dir;
+			range = (pos - onRay).Length();
+
+			if (pointOnRay)
+				*pointOnRay = onRay;
+		}
+
+		return range;
+	}
+
+	static void VectorAngles(const Vector& forward, Vector& up, QAngle& angles)
+	{
+		Vector left = CrossProduct(up, forward);
+		left.NormalizeInPlace();
+
+		float forwardDist = forward.Length2D();
+
+		if (forwardDist > 0.001f)
+		{
+			angles.x = atan2f(-forward.z, forwardDist) * 180 / PI;
+			angles.y = atan2f(forward.y, forward.x) * 180 / PI;
+
+			float upZ = (left.y * forward.x) - (left.x * forward.y);
+			angles.z = atan2f(left.z, upZ) * 180 / PI;
+		}
+		else
+		{
+			angles.x = atan2f(-forward.z, forwardDist) * 180 / PI;
+			angles.y = atan2f(-left.x, left.y) * 180 / PI;
+			angles.z= 0;
+		}
+	}
+
 	static void VectorAngles(const Vector& forward, QAngle &angles)
 	{
 		float tmp, yaw, pitch;
@@ -202,6 +266,7 @@ public:
 	{
 		QAngle ret;
 		VectorAngles(dst - src, ret);
+		ret.Normalize();
 		return ret;
 	}
 

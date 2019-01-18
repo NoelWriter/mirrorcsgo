@@ -1,6 +1,7 @@
 #include "Ragebot.h"
 #include "Autowall.h"
 #include "Aimbot.h"
+#include "..\SDK\CGlobalVarsBase.h"
 
 Ragebot g_Ragebots;
 RagebotInit g_Ragebot;
@@ -139,7 +140,7 @@ bool Ragebot::CanHitTarget(C_BaseEntity* pTarget)
 	for (const int &hitbox : hitboxes)
 	{
 		Vector pTargetPos = pTarget->GetBonePos(hitbox);
-		if (new_autowall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity())))
+		if (false)//new_autowall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity())))
 			return true;
 	}
 	return false;
@@ -217,7 +218,7 @@ bool Ragebot::Hitscan(C_BaseEntity* pTarget, Vector& hitboxPos)
 	for (const int &hitbox : hitboxes)
 	{
 		Vector pTargetPos = pTarget->GetBonePos(hitbox);
-		ActualDamage = new_autowall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity()));
+		ActualDamage = 0;//new_autowall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity()));
 		if (ActualDamage > pTarget->GetHealth())
 		{
 			hitboxPos = pTargetPos;

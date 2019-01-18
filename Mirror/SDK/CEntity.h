@@ -37,17 +37,53 @@ public:
         return reinterpret_cast<C_BaseCombatWeapon*>(g_pEntityList->GetClientEntityFromHandle(weaponData));
     }
 
-    int GetTeam()
-    {
-        static int m_iTeamNum = g_pNetvars->GetOffset("DT_BaseEntity", "m_iTeamNum");
-        return GetValue<int>(m_iTeamNum);
+    int GetHitboxSet()
+    {	
+        static int m_nHitboxSet = g_pNetvars->GetOffset("DT_BasePlayer", "m_nHitboxSet");
+        return GetValue<int>(m_nHitboxSet);
     }
+
+	void C_BaseEntity::SetAbsOrigin(const Vector &origin)
+	{
+		using SetAbsOriginFn = void(__thiscall*)(void*, const Vector &origin);
+		static SetAbsOriginFn SetAbsOrigin = (SetAbsOriginFn)Utils::FindSignature(("client_panorama.dll"), "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8");
+
+		SetAbsOrigin(this, origin);
+	}
+
+	void C_BaseEntity::SetAbsAngles(const QAngle &angles)
+	{
+		using SetAbsAnglesFn = void(__thiscall*)(void*, const QAngle &angles);
+		static SetAbsAnglesFn SetAbsAngles = (SetAbsAnglesFn)Utils::FindSignature(("client_panorama.dll"), "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1 E8");
+
+		SetAbsAngles(this, angles);
+	}
+
+	int GetTeam()
+	{
+		static int m_iTeamNum = g_pNetvars->GetOffset("DT_BaseEntity", "m_iTeamNum");
+		return GetValue<int>(m_iTeamNum);
+	}
 
     EntityFlags GetFlags()
     {
         static int m_fFlags = g_pNetvars->GetOffset("DT_BasePlayer", "m_fFlags");
         return GetValue<EntityFlags>(m_fFlags);
     }
+
+	const Vector C_BaseEntity::WorldSpaceCenter()
+	{
+		Vector vecOrigin = GetOrigin();
+
+		Vector min = this->GetCollideable()->OBBMins() + vecOrigin;
+		Vector max = this->GetCollideable()->OBBMaxs() + vecOrigin;
+
+		Vector size = max - min;
+		size /= 2.f;
+		size += min;
+
+		return size;
+	}
 
     MoveType_t GetMoveType()
     {
@@ -69,11 +105,17 @@ public:
 
     bool IsAlive() { return this->GetHealth() > 0 && this->GetLifeState() == 0; }
 
-    bool IsImmune()
-    {
-        static int m_bGunGameImmunity = g_pNetvars->GetOffset("DT_CSPlayer", "m_bGunGameImmunity");
-        return GetValue<bool>(m_bGunGameImmunity);
-    }
+	bool IsImmune()
+	{
+		static int m_bGunGameImmunity = g_pNetvars->GetOffset("DT_CSPlayer", "m_bGunGameImmunity");
+		return GetValue<bool>(m_bGunGameImmunity);
+	}
+
+	QAngle GetEyeAngles()
+	{
+		static int m_angEyeAngles = g_pNetvars->GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		return GetValue<QAngle>(m_angEyeAngles);
+	}
 
     int GetTickBase()
     {
@@ -101,6 +143,17 @@ public:
 			return Vector(boneMatrix[i][0][3], boneMatrix[i][1][3], boneMatrix[i][2][3]);
 		}
 		return Vector(0, 0, 0);
+	}
+
+	bool C_BaseEntity::SetupBones2(matrix3x4_t *pBoneToWorldOut, int nMaxBones, int boneMask, float currentTime)
+	{
+		auto backupval = *reinterpret_cast<uint8_t*>((uintptr_t)this + 0x274);
+
+		*reinterpret_cast<uint8_t*>((uintptr_t)this + 0x274) = 0;
+		bool setuped_bones = this->SetupBones(pBoneToWorldOut, nMaxBones, boneMask, currentTime);
+		*reinterpret_cast<uint8_t*>((uintptr_t)this + 0x274) = backupval;
+
+		return setuped_bones;
 	}
 
 	QAngle GetPunchAngles()
@@ -179,21 +232,26 @@ public:
 	{
 		if (!player || !player->IsAlive() || player->IsDormant())
 			return false;
-		///if (player->IsBehindSmoke(g_pEntityList->GetClientEntity(g_pEngine->GetLocalPlayer())))
-		///	return false;
+
 		CGameTrace tr;
 		Ray_t ray;
 		CTraceFilter filter;
+
 		filter.pSkip = this;
 		auto start = GetEyePosition();
-		auto dir = (pos - start).Vector::Normalize();
+
 		ray.Init(start, pos);
 		g_pEngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+
+		if (tr.fraction == 1.f)
+			return false;
 
 		return tr.hit_entity == player || tr.fraction > 0.97f;
 	}
 
-    Vector GetEyePosition() { return this->GetOrigin() + this->GetViewOffset(); }
+	Vector GetEyePosition() {
+		return this->GetOrigin() + this->GetViewOffset();
+	}
 };
 
 
@@ -215,9 +273,12 @@ private:
 public:
     ItemDefinitionIndex GetItemDefinitionIndex()
     {
+		if (!this)
+			return ItemDefinitionIndex::WEAPON_XM1014;
+
         static int m_iItemDefinitionIndex = g_pNetvars->GetOffset("DT_BaseAttributableItem", "m_AttributeManager", "m_Item", "m_iItemDefinitionIndex");
         return GetValue<ItemDefinitionIndex>(m_iItemDefinitionIndex);
-    }
+    } // Crash 3x
 
     float GetNextPrimaryAttack()
     {
@@ -239,6 +300,7 @@ public:
 	bool isRifle()
 	{
 		auto itemIndex = this->GetItemDefinitionIndex();
+
 		switch (itemIndex)
 		{
 		case ItemDefinitionIndex::WEAPON_AK47:
@@ -321,6 +383,16 @@ public:
 	float GetInaccuracy()
 	{
 		return Utils::CallVFunc<471, float>(this);
+	}
+
+	float GetSpread()
+	{
+		return Utils::CallVFunc<440, float>(this);
+	}
+
+	void UpdateAccuracyPenalty()
+	{
+		return Utils::CallVFunc<472, void>(this);
 	}
 
     std::string GetName()

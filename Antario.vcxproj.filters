@@ -230,5 +230,8 @@
     <ClInclude Include="Mirror\Features\Ragebot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mirror\SDK\IEngineTrace.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -411,6 +411,31 @@ enum class CSWeaponType : int
 class WeaponInfo_t
 {
 public:
+	__int32 weapon_type()
+	{
+		return *reinterpret_cast<__int32*>(reinterpret_cast<uintptr_t>(this) + 0xC8);
+	}
+	__int32 m_iDamage()
+	{
+		return *reinterpret_cast<__int32*>(reinterpret_cast<uintptr_t>(this) + 0xF0);
+	}
+	float m_fRange()
+	{
+		return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(this) + 0x108);
+	}
+	float m_fPenetration()
+	{
+		return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(this) + 0xFC);
+	}
+	float m_fRangeModifier()
+	{
+		return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(this) + 0x10C);
+	}
+	float m_fArmorRatio()
+	{
+		return *reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(this) + 0xF4);
+	}
+
     void*           pVTable;
     char*	    	consoleName;			// 0x0004
     char	    	pad_0008[12];			// 0x0008

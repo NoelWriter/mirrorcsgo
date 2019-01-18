@@ -12,6 +12,7 @@
 #include "..\SDK\IVModelInfoClient.hpp"
 #include "..\SDK\IVModelRender.hpp"
 #include "..\SDK\IPhysics.h"
+#include "..\SDK\IEngineTrace.hpp"
 
 // Initializing global interfaces
 

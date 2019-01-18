@@ -40,11 +40,13 @@ void MenuMain::Initialize()
 			auto sectRageAimbotMain = tab2->AddSection("Aimbot Settings", 1.f);
 			{
 				sectRageAimbotMain->AddCheckBox("Enable", &g_Settings.bRagebotEnable);
-				sectRageAimbotMain->AddSlider("Fov", &g_Settings.bRagebotFov, 1, 360);
 				sectRageAimbotMain->AddCheckBox("Autofire", &g_Settings.bRagebotAutoFire);
-				sectRageAimbotMain->AddSlider("Minimum damage", &g_Settings.bRagebotMinDamage, 1, 100);
+				sectRageAimbotMain->AddSlider("Minimum damage", &g_Settings.bRagebotMinDamage, 1.f, 100);
+				sectRageAimbotMain->AddCheckBox("Hitchance", &g_Settings.bRagebotHitchance);
+				sectRageAimbotMain->AddSlider("Hitchance Amount", &g_Settings.bRagebotHitchanceA, 1.f, 100);
 				sectRageAimbotMain->AddCheckBox("Silent", &g_Settings.bRagebotSilent);
 				sectRageAimbotMain->AddCheckBox("Autowall", &g_Settings.bRagebotAutowall);
+				sectRageAimbotMain->AddCheckBox("Backtrack", &g_Settings.bRagebotBacktrack);
 			}
 			auto sectAntiAim = tab2->AddSection("Anti-Aim Settings", 1.f);
 			{

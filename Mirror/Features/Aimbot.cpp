@@ -7,6 +7,7 @@
 #include "..\Utils\Interfaces.h"
 #include "Backtrack.h"
 #include "Autowall.h"
+#include "..\SDK\CGlobalVarsBase.h"
 
 // Define some constant variables
 #define PI 3.14159265358979323846264338327f
@@ -56,35 +57,20 @@ void Aimbot::DoRageAimbot(CUserCmd* pCmd) {
 
 	// Get some other variables
 	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	if (!weapon)
+		return;
+
 	int bestHitbox = 8;
 
-	bool isAttacking = (g::pCmd->buttons & IN_ATTACK);
+	bool isAttacking = (g::pCmd->buttons & IN_ATTACK || g_Settings.bRagebotAutoFire);
 	if (!isAttacking)
 		return;
 
-	StartMoveFix();
-
-	// Get a new target
-	Vector targetHitbox;
-	C_BaseEntity *target = GetBestTarget(targetHitbox);
-
-	// Check if target is Null
-	if (!target)
+	// Dont aimbot when we have a knife or grenade in our hands
+	if (weapon->isGrenade() || weapon->GetCSWpnData()->weapon_type() == 0)
 		return;
 
-	if (g_Settings.bRagebotAutowall)
-		; //Implement Autowall
-	else
-		if (!g::pLocalEntity->CanSeePlayer(target, target->GetBonePos(bestHitbox)) && !CanHitTarget(target))
-			return;
-	
-
-	AimAt(pCmd, target, bestHitbox);
-
-	if (g_Settings.bRagebotAutoFire)
-		AutoShoot(pCmd, target);
-
-	EndMoveFix();
+	new_autowall.TargetEntities();
 }
 
 void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
@@ -101,10 +87,16 @@ void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
 
 	// Get some other variables
 	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	if (!weapon)
+		return;
+
 	int bestHitbox = 7;
 
 	bool isAttacking = (g::pCmd->buttons & IN_ATTACK);
 	if (!isAttacking)
+		return;
+
+	if (weapon->isGrenade() || weapon->GetCSWpnData()->weapon_type() == 0)
 		return;
 
 	StartMoveFix();
@@ -125,7 +117,10 @@ void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
 	bestHitbox = getHitbox(weapon);
 
 	// Let's check if wee can see the player, if we can, we aim.
-	if (g::pLocalEntity->CanSeePlayer(target, target->GetBonePos(bestHitbox)))
+	CGameTrace tr;
+	new_autowall.traceIt(g::pLocalEntity->GetEyePosition(), target->GetBonePos(bestHitbox), MASK_SHOT | CONTENTS_GRATE, g::pLocalEntity, &tr);
+
+	if (tr.fraction > 0.97f && tr.fraction != 1.f)
 		AimAt(g::pCmd, target, bestHitbox);
 
 	EndMoveFix();
@@ -223,7 +218,7 @@ bool Aimbot::AutoShoot(CUserCmd* pCmd, C_BaseEntity* BestTarget)
 	float flServerTime = g::pLocalEntity->GetTickBase() * g_pGlobalVars->intervalPerTick;
 	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(pCmd->buttons & IN_RELOAD);
 
-	if (Hitchance(pWeapon, 20) > 20 && !(pCmd->buttons & IN_ATTACK) && canShoot && CanHitTarget(BestTarget))
+	if (Hitchance(pWeapon, 20) > 20 && !(pCmd->buttons & IN_ATTACK) && canShoot)
 		pCmd->buttons |= IN_ATTACK;
 	else
 		return false;
@@ -245,6 +240,7 @@ float Aimbot::Hitchance(C_BaseCombatWeapon* pWeapon, float hitChance)
 	return hitchance;
 }
 
+/*
 bool Aimbot::CanHitTarget(C_BaseEntity* pTarget)
 {
 	Vector newShittyDistance;
@@ -275,7 +271,7 @@ bool Aimbot::CanHitTarget(C_BaseEntity* pTarget)
 			return true;
 	}
 	return false;
-}
+}*/
 
 float Aimbot::getFov(C_BaseCombatWeapon* weapon) {
 	if (weapon->isSniper())
@@ -304,7 +300,7 @@ int Aimbot::getHitbox(C_BaseCombatWeapon* weapon) {
 	if (weapon->isRifle())
 		curSelected = g_Settings.bAimbotHitboxRifle;
 	if (weapon->isPistol())
-		curSelected = g_Settings.bAimbotHitboxSniper;
+		curSelected = g_Settings.bAimbotHitboxPistol;
 
 	switch (curSelected)
 	{
@@ -312,6 +308,83 @@ int Aimbot::getHitbox(C_BaseCombatWeapon* weapon) {
 	case 1: return 4;
 	case 2: return 6;
 	default: return 8;
+	}
+}
+
+void Aimbot::AimAtVec(CUserCmd* pCmd, C_BaseEntity* pEnt, Vector hitbox)
+{
+	if (!g::pLocalEntity || !g_pEngine->IsInGame())
+		return;
+
+	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	if (!weapon)
+		return;
+
+	if (weapon->GetAmmo() == 0 || pCmd->buttons & IN_RELOAD)
+		return;
+
+	auto localTeam = g::pLocalEntity->GetTeam();
+
+	if (!pEnt
+		|| !pEnt->IsAlive()
+		|| pEnt->IsDormant()
+		|| pEnt == g::pLocalEntity
+		|| pEnt->GetTeam() == localTeam
+		|| pEnt->IsImmune())
+		return;
+
+	Vector pHitboxServerDistance;
+	bool doBacktrack = false;
+
+	QAngle tempAimAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pEnt->GetBonePos(8));
+	float bestFov = get_fov(pCmd->viewangles, tempAimAngle);
+	float curWeaponFov = getFov(g::pLocalEntity->GetActiveWeapon());
+
+	Vector actualHitBox = hitbox;
+	Vector myPos = g::pLocalEntity->GetEyePosition();
+
+	// If we have a better tick to aim at, move our target to that tick
+	if (doBacktrack)
+		actualHitBox -= pHitboxServerDistance;
+
+	Vector pEntPos = actualHitBox;
+
+	// Velocity Compensation
+	pEntPos += pEnt->GetVelocity() * g_pGlobalVars->intervalPerTick;
+
+	// Get angle we are supposed to aim at
+	QAngle aimAngle = Utils::CalcAngle(myPos, pEntPos);
+	if (g::pLocalEntity->GetPunchAngles().Length() > 0)
+		aimAngle -= g::pLocalEntity->GetPunchAngles() * 2;
+
+	// Make sure we dont aim out of bounds otherwise we'll get untrusted
+	Utils::ClampViewAngles(aimAngle);
+
+	// Get the difference between aim angle and your viewangle
+	QAngle deltaAngle = pCmd->viewangles - aimAngle;
+
+	// Make sure we dont aim out of bounds otherwise we'll get untrusted
+	Utils::ClampViewAngles(deltaAngle);
+
+	// Get the fov
+	auto fov = get_fov(pCmd->viewangles + g::pLocalEntity->GetPunchAngles() * 2, aimAngle);
+
+	QAngle finalAngle;
+
+	finalAngle = pCmd->viewangles - deltaAngle;
+	Utils::ClampViewAngles(finalAngle);
+
+	float currentFov;
+
+	currentFov = g_Settings.bRagebotFov;
+
+	if (fov <= currentFov)
+	{
+		if (!g_Settings.bRagebotSilent)
+		{
+			g_pEngine->SetViewAngles(finalAngle);
+		}
+		pCmd->viewangles = finalAngle;
 	}
 }
 
@@ -344,17 +417,16 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 	float bestFov = get_fov(pCmd->viewangles, tempAimAngle);
 	float curWeaponFov = getFov(g::pLocalEntity->GetActiveWeapon());
 
-
 	if (g_Settings.bAimbotBacktrack && g_Settings.bAimbotEnable)
 	{
 		// Loop through backtracking ticks
 		for (int i = 0; i < g_Settings.bAimbotBacktrackTicks; i++)
 		{
-			Vector pHitboxPos = headPositions[pEnt->EntIndex()][i].hitboxPos;
+			Vector pHitboxPos = l_SavedTicks[pEnt->EntIndex()][i].hitboxPos;
 			QAngle pHitboxAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pHitboxPos);
 
 			auto newFov = g_Aimbot.get_fov(g::pCmd->viewangles, pHitboxAngle);
-			if (headPositions[pEnt->EntIndex()][i].simtime <= g::pLocalEntity->GetSimulationTime() - 1)
+			if (l_SavedTicks[pEnt->EntIndex()][i].simtime <= g::pLocalEntity->GetSimulationTime() - 1)
 				continue;
 
 			// Is our fov closer to the tick we are currently itterating on?

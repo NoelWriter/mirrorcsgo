@@ -64,11 +64,14 @@ public:
 
 	//Ragebot
 	bool  bRagebotEnable		= false;
-	float bRagebotFov			= 1;
+	float bRagebotFov			= 1.f;
 	bool  bRagebotAutoFire		= false;
-	float bRagebotMinDamage		= 1;
+	float bRagebotMinDamage		= 1.f;
+	bool  bRagebotHitchance		= false;
+	float bRagebotHitchanceA	= 1.f;
 	bool  bRagebotSilent		= false;
 	bool  bRagebotAutowall      = false;
+	bool  bRagebotBacktrack     = false;
 };
 
 extern Settings g_Settings;

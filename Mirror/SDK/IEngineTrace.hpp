@@ -1,12 +1,7 @@
 #pragma once
-#include "..\SDK\IClientMode.h"
-#include "..\SDK\IBaseClientDll.h"
-#include "..\SDK\IClientEntityList.h"
-#include "..\SDK\IVEngineClient.h"
-#include "..\SDK\CPrediction.h"
-#include "..\SDK\IGameEvent.h"
-#include "..\SDK\ISurface.h"
-#include "..\Utils\Vector4D.hpp"
+
+#include "../Utils/Vector4D.hpp"
+#include "ClientClass.h"
 
 #pragma region MASKS
 
@@ -105,29 +100,30 @@
 #define   MASK_DEADSOLID                (CONTENTS_SOLID|CONTENTS_PLAYERCLIP|CONTENTS_WINDOW|CONTENTS_GRATE)
 #pragma endregion
 
+class Vector;
 class IHandleEntity;
 struct Ray_t;
 class CGameTrace;
 typedef CGameTrace trace_t;
 class ICollideable;
-class ITraceListData;
+class QAngle;
+class CTraceListData;
 class CPhysCollide;
 struct cplane_t;
-struct virtualmeshlist_t;
 
-enum class TraceType
+enum TraceType_t
 {
-    TRACE_EVERYTHING = 0,
-    TRACE_WORLD_ONLY,
-    TRACE_ENTITIES_ONLY,
-    TRACE_EVERYTHING_FILTER_PROPS,
+	TRACE_EVERYTHING = 0,
+	TRACE_WORLD_ONLY,				// NOTE: This does *not* test static props!!!
+	TRACE_ENTITIES_ONLY,			// NOTE: This version will *not* test static props
+	TRACE_EVERYTHING_FILTER_PROPS,	// NOTE: This version will pass the IHandleEntity for props through the filter, unlike all other filters
 };
 
 class ITraceFilter
 {
 public:
-    virtual bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) = 0;
-    virtual TraceType GetTraceType() const = 0;
+	virtual bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) = 0;
+	virtual TraceType_t GetTraceType() const = 0;
 };
 
 
@@ -139,76 +135,62 @@ public:
 class CTraceFilter : public ITraceFilter
 {
 public:
-    bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
-    {
-        return !(pEntityHandle == pSkip);
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_EVERYTHING;
-    }
+	bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
+	{
+		ClientClass* pEntCC = ((IClientEntity*)pEntityHandle)->GetClientClass();
+		if (pEntCC && strcmp(ccIgnore, ""))
+		{
+			if (pEntCC->pNetworkName == ccIgnore)
+				return false;
+		}
+
+		return !(pEntityHandle == pSkip);
+	}
+
+	virtual TraceType_t GetTraceType() const
+	{
+		return TraceType_t::TRACE_EVERYTHING;
+	}
+
 	inline void SetIgnoreClass(char* Class)
 	{
 		ccIgnore = Class;
 	}
 
+	void* pSkip;
 	char* ccIgnore = "";
-    void* pSkip;
 };
 
 class CTraceFilterSkipEntity : public ITraceFilter
 {
 public:
-    CTraceFilterSkipEntity(IHandleEntity* pEntityHandle)
-    {
-        pSkip = pEntityHandle;
-    }
-
-    bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
-    {
-        return !(pEntityHandle == pSkip);
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_EVERYTHING;
-    }
-    void* pSkip;
-};
-
-class CTraceFilterSkipTwoEntities : public ITraceFilter
-{
-public:
-	CTraceFilterSkipTwoEntities(IHandleEntity* pPassEnt1, IHandleEntity* pPassEnt2)
+	CTraceFilterSkipEntity(IHandleEntity* pEntityHandle)
 	{
-		passentity1 = pPassEnt1;
-		passentity2 = pPassEnt2;
+		pSkip = pEntityHandle;
 	}
 
-	bool ShouldHitEntity(IHandleEntity* pEntityHandle, int contentsMask)
+	bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
 	{
-		return !(pEntityHandle == passentity1 || pEntityHandle == passentity2);
+		return !(pEntityHandle == pSkip);
 	}
-
-	TraceType GetTraceType() const
+	virtual TraceType_t GetTraceType() const
 	{
-		return TraceType::TRACE_EVERYTHING;
+		return TraceType_t::TRACE_EVERYTHING;
 	}
-
-	void *passentity1;
-	void *passentity2;
+	void* pSkip;
 };
 
 class CTraceFilterEntitiesOnly : public ITraceFilter
 {
 public:
-    bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
-    {
-        return true;
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_ENTITIES_ONLY;
-    }
+	bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
+	{
+		return true;
+	}
+	virtual TraceType_t GetTraceType() const
+	{
+		return TraceType_t::TRACE_ENTITIES_ONLY;
+	}
 };
 
 
@@ -218,87 +200,85 @@ public:
 class CTraceFilterWorldOnly : public ITraceFilter
 {
 public:
-    bool ShouldHitEntity(IHandleEntity* /*pServerEntity*/, int /*contentsMask*/)
-    {
-        return false;
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_WORLD_ONLY;
-    }
+	bool ShouldHitEntity(IHandleEntity* /*pServerEntity*/, int /*contentsMask*/)
+	{
+		return false;
+	}
+	virtual TraceType_t GetTraceType() const
+	{
+		return TraceType_t::TRACE_WORLD_ONLY;
+	}
 };
 
 class CTraceFilterWorldAndPropsOnly : public ITraceFilter
 {
 public:
-    bool ShouldHitEntity(IHandleEntity* /*pServerEntity*/, int /*contentsMask*/)
-    {
-        return false;
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_EVERYTHING;
-    }
+	bool ShouldHitEntity(IHandleEntity* /*pServerEntity*/, int /*contentsMask*/)
+	{
+		return false;
+	}
+	virtual TraceType_t GetTraceType() const
+	{
+		return TraceType_t::TRACE_EVERYTHING;
+	}
 };
-/*
-class CTraceFilterPlayersOnlySkipOne : public ITraceFilter
-{
-public:
-    CTraceFilterPlayersOnlySkipOne(IClientEntity* ent)
-    {
-        pEnt = ent;
-    }
-    bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/
- /*   {
-       return pEntityHandle != pEnt && ((IClientEntity*)pEntityHandle)->GetClientClass()->ClassID == EClassIds::CCSPlayer;
 
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_ENTITIES_ONLY;
-    }
+//class CTraceFilterPlayersOnlySkipOne : public ITraceFilter
+//{
+//public:
+//	CTraceFilterPlayersOnlySkipOne(IClientEntity* ent)
+//	{
+//		pEnt = ent;
+//	}
+//	bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
+//	{
+//		return pEntityHandle != pEnt && ((IClientEntity*)pEntityHandle)->GetClientClass()->m_ClassID == ClassId_CCSPlayer;
+//	}
+//	virtual TraceType GetTraceType() const
+//	{
+//		return TraceType::TRACE_ENTITIES_ONLY;
+//	}
+//
+//private:
+//	IClientEntity* pEnt;
+//};
 
-private:
-    IClientEntity* pEnt;
-};
-*/
-/*
 class CTraceFilterSkipTwoEntities : public ITraceFilter
 {
 public:
-    CTraceFilterSkipTwoEntities(IClientEntity* ent1, IClientEntity* ent2)
-    {
-        pEnt1 = ent1;
-        pEnt2 = ent2;
-    }
-    bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/
- /*   {
-        return !(pEntityHandle == pEnt1 || pEntityHandle == pEnt2);
-    }
-    virtual TraceType GetTraceType() const
-    {
-        return TraceType::TRACE_EVERYTHING;
-    }
+	CTraceFilterSkipTwoEntities(IClientEntity* ent1, IClientEntity* ent2)
+	{
+		pEnt1 = ent1;
+		pEnt2 = ent2;
+	}
+	bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
+	{
+		return !(pEntityHandle == pEnt1 || pEntityHandle == pEnt2);
+	}
+	virtual TraceType_t GetTraceType() const
+	{
+		return TraceType_t::TRACE_EVERYTHING;
+	}
 
 private:
-    IClientEntity* pEnt1;
-    IClientEntity* pEnt2;
+	IClientEntity* pEnt1;
+	IClientEntity* pEnt2;
 };
 
 class CTraceFilterHitAll : public CTraceFilter
 {
 public:
-    virtual bool ShouldHitEntity(IHandleEntity* pServerEntity int ontentsMask
-/*    {
-        return true;
-    }
+	virtual bool ShouldHitEntity(IHandleEntity* /*pServerEntity*/, int /*contentsMask*/)
+	{
+		return true;
+	}
 };
-*/
+
 
 enum class DebugTraceCounterBehavior_t
 {
-    kTRACE_COUNTER_SET = 0,
-    kTRACE_COUNTER_INC,
+	kTRACE_COUNTER_SET = 0,
+	kTRACE_COUNTER_INC,
 };
 
 //-----------------------------------------------------------------------------
@@ -307,44 +287,44 @@ enum class DebugTraceCounterBehavior_t
 class IEntityEnumerator
 {
 public:
-    // This gets called with each handle
-    virtual bool EnumEntity(IHandleEntity *pHandleEntity) = 0;
+	// This gets called with each handle
+	virtual bool EnumEntity(IHandleEntity *pHandleEntity) = 0;
 };
 
 
 struct BrushSideInfo_t
 {
-    Vector4D plane;               // The plane of the brush side
-    unsigned short bevel;    // Bevel plane?
-    unsigned short thin;     // Thin?
+	Vector4D plane;               // The plane of the brush side
+	unsigned short bevel;    // Bevel plane?
+	unsigned short thin;     // Thin?
 };
 
 class CPhysCollide;
 
 struct vcollide_t
 {
-    unsigned short solidCount : 15;
-    unsigned short isPacked : 1;
-    unsigned short descSize;
-    // VPhysicsSolids
-    CPhysCollide   **solids;
-    char           *pKeyValues;
-    void           *pUserData;
+	unsigned short solidCount : 15;
+	unsigned short isPacked : 1;
+	unsigned short descSize;
+	// VPhysicsSolids
+	CPhysCollide   **solids;
+	char           *pKeyValues;
+	void           *pUserData;
 };
 
 struct cmodel_t
 {
-    Vector         mins, maxs;
-    Vector         origin;        // for sounds or lights
-    int            headnode;
-    vcollide_t     vcollisionData;
+	Vector         mins, maxs;
+	Vector         origin;        // for sounds or lights
+	int            headnode;
+	vcollide_t     vcollisionData;
 };
 
 struct csurface_t
 {
-    const char     *name;
-    short          surfaceProps;
-    unsigned short flags;         // BUGBUG: These are declared per surface, not per material, but this database is per-material now
+	const char     *name;
+	short          surfaceProps;
+	unsigned short flags;         // BUGBUG: These are declared per surface, not per material, but this database is per-material now
 };
 
 //-----------------------------------------------------------------------------
@@ -352,61 +332,62 @@ struct csurface_t
 //-----------------------------------------------------------------------------
 struct Ray_t
 {
-    VectorAligned  m_Start;  // starting point, centered within the extents
-    VectorAligned  m_Delta;  // direction + length of the ray
-    VectorAligned  m_StartOffset; // Add this to m_Start to Get the actual ray start
-    VectorAligned  m_Extents;     // Describes an axis aligned box extruded along a ray
-    const matrix3x4_t *m_pWorldAxisTransform;
-    bool m_IsRay;  // are the extents zero?
-    bool m_IsSwept;     // is delta != 0?
+	VectorAligned  m_Start;  // starting point, centered within the extents
+	VectorAligned  m_Delta;  // direction + length of the ray
+	VectorAligned  m_StartOffset; // Add this to m_Start to Get the actual ray start
+	VectorAligned  m_Extents;     // Describes an axis aligned box extruded along a ray
+	const matrix3x4_t *m_pWorldAxisTransform;
+	bool m_IsRay;  // are the extents zero?
+	bool m_IsSwept;     // is delta != 0?
 
-    Ray_t() : m_pWorldAxisTransform(NULL) {}
+	Ray_t() : m_pWorldAxisTransform(NULL) {}
 
-    void Init(Vector const& start, Vector const& end)
-    {
-        m_Delta = end - start;
+	void Init(Vector const& start, Vector const& end)
+	{
+		m_Delta = end - start;
 
-        m_IsSwept = (m_Delta.LengthSqr() != 0);
+		m_IsSwept = (m_Delta.LengthSqr() != 0);
 
-        m_Extents.Init();
+		m_Extents.Init();
 
-        m_pWorldAxisTransform = NULL;
-        m_IsRay = true;
+		m_pWorldAxisTransform = NULL;
+		m_IsRay = true;
 
-        // Offset m_Start to be in the center of the box...
-        m_StartOffset.Init();
-        m_Start = start;
-    }
+		// Offset m_Start to be in the center of the box...
+		m_StartOffset.Init();
+		m_Start = start;
+	}
 
-    void Init(Vector const& start, Vector const& end, Vector const& mins, Vector const& maxs)
-    {
-        m_Delta = end - start;
+	void Init(Vector const& start, Vector const& end, Vector const& mins, Vector const& maxs)
+	{
+		m_Delta = end - start;
 
-        m_pWorldAxisTransform = NULL;
-        m_IsSwept = (m_Delta.LengthSqr() != 0);
+		m_pWorldAxisTransform = NULL;
+		m_IsSwept = (m_Delta.LengthSqr() != 0);
 
-        m_Extents = maxs - mins;
-        m_Extents *= 0.5f;
-        m_IsRay = (m_Extents.LengthSqr() < 1e-6);
+		m_Extents = maxs - mins;
+		m_Extents *= 0.5f;
+		m_IsRay = (m_Extents.LengthSqr() < 1e-6);
 
-        // Offset m_Start to be in the center of the box...
-        m_StartOffset = maxs + mins;
-        m_StartOffset *= 0.5f;
-        m_Start = start + m_StartOffset;
-        m_StartOffset *= -1.0f;
-    }
-    Vector InvDelta() const
-    {
-        Vector vecInvDelta;
-        for(int iAxis = 0; iAxis < 3; ++iAxis) {
-            if(m_Delta[iAxis] != 0.0f) {
-                vecInvDelta[iAxis] = 1.0f / m_Delta[iAxis];
-            } else {
-                vecInvDelta[iAxis] = FLT_MAX;
-            }
-        }
-        return vecInvDelta;
-    }
+		// Offset m_Start to be in the center of the box...
+		m_StartOffset = maxs + mins;
+		m_StartOffset *= 0.5f;
+		m_Start = start + m_StartOffset;
+		m_StartOffset *= -1.0f;
+	}
+	Vector InvDelta() const
+	{
+		Vector vecInvDelta;
+		for (int iAxis = 0; iAxis < 3; ++iAxis) {
+			if (m_Delta[iAxis] != 0.0f) {
+				vecInvDelta[iAxis] = 1.0f / m_Delta[iAxis];
+			}
+			else {
+				vecInvDelta[iAxis] = FLT_MAX;
+			}
+		}
+		return vecInvDelta;
+	}
 
 private:
 };
@@ -414,113 +395,92 @@ private:
 class CBaseTrace
 {
 public:
-    bool IsDispSurface(void) { return ((dispFlags & DISPSURF_FLAG_SURFACE) != 0); }
-    bool IsDispSurfaceWalkable(void) { return ((dispFlags & DISPSURF_FLAG_WALKABLE) != 0); }
-    bool IsDispSurfaceBuildable(void) { return ((dispFlags & DISPSURF_FLAG_BUILDABLE) != 0); }
-    bool IsDispSurfaceProp1(void) { return ((dispFlags & DISPSURF_FLAG_SURFPROP1) != 0); }
-    bool IsDispSurfaceProp2(void) { return ((dispFlags & DISPSURF_FLAG_SURFPROP2) != 0); }
+	bool IsDispSurface(void) { return ((dispFlags & DISPSURF_FLAG_SURFACE) != 0); }
+	bool IsDispSurfaceWalkable(void) { return ((dispFlags & DISPSURF_FLAG_WALKABLE) != 0); }
+	bool IsDispSurfaceBuildable(void) { return ((dispFlags & DISPSURF_FLAG_BUILDABLE) != 0); }
+	bool IsDispSurfaceProp1(void) { return ((dispFlags & DISPSURF_FLAG_SURFPROP1) != 0); }
+	bool IsDispSurfaceProp2(void) { return ((dispFlags & DISPSURF_FLAG_SURFPROP2) != 0); }
 
 public:
 
-    // these members are aligned!!
-    Vector         startpos;            // start position
-    Vector         endpos;              // final position
-    cplane_t       plane;               // surface normal at impact
+	// these members are aligned!!
+	Vector         startpos;            // start position
+	Vector         endpos;              // final position
+	cplane_t       plane;               // surface normal at impact
 
-    float          fraction;            // time completed, 1.0 = didn't hit anything
+	float          fraction;            // time completed, 1.0 = didn't hit anything
 
-    int            contents;            // contents on other side of surface hit
-    unsigned short dispFlags;           // displacement flags for marking surfaces with data
+	int            contents;            // contents on other side of surface hit
+	unsigned short dispFlags;           // displacement flags for marking surfaces with data
 
-    bool           allsolid;            // if true, plane is not valid
-    bool           startsolid;          // if true, the initial point was in a solid area
+	bool           allsolid;            // if true, plane is not valid
+	bool           startsolid;          // if true, the initial point was in a solid area
 
-    CBaseTrace() {}
+	CBaseTrace() {}
 
 };
 
 class CGameTrace : public CBaseTrace
 {
 public:
-    bool DidHitWorld() const;
-    bool DidHitNonWorldEntity() const;
-    int GetEntityIndex() const;
-    bool DidHit() const;
-    bool IsVisible() const;
+	bool DidHitWorld() const;
+	bool DidHitNonWorldEntity() const;
+	int GetEntityIndex() const;
+	bool DidHit() const;
+	bool IsVisible() const;
 
 public:
 
-    float               fractionleftsolid;  // time we left a solid, only valid if we started in solid
-    csurface_t          surface;            // surface hit (impact surface)
-    int                 hitgroup;           // 0 == generic, non-zero is specific body part
-    short               physicsbone;        // physics bone hit by trace in studio
-    unsigned short      worldSurfaceIndex;  // Index of the msurface2_t, if applicable
-    C_BaseEntity*      hit_entity;
-    int                 hitbox;                       // box hit by trace in studio
+	float               fractionleftsolid;  // time we left a solid, only valid if we started in solid
+	csurface_t          surface;            // surface hit (impact surface)
+	int                 hitgroup;           // 0 == generic, non-zero is specific body part
+	short               physicsbone;        // physics bone hit by trace in studio
+	unsigned short      worldSurfaceIndex;  // Index of the msurface2_t, if applicable
+	C_BaseEntity*      hit_entity;
+	int                 hitbox;                       // box hit by trace in studio
 
-    CGameTrace() {}
+	CGameTrace() {}
 
 private:
-    // No copy constructors allowed
-    CGameTrace(const CGameTrace& other) :
-        fractionleftsolid(other.fractionleftsolid),
-        surface(other.surface),
-        hitgroup(other.hitgroup),
-        physicsbone(other.physicsbone),
-        worldSurfaceIndex(other.worldSurfaceIndex),
-        hit_entity(other.hit_entity),
-        hitbox(other.hitbox)
-    {
-        startpos = other.startpos;
-        endpos = other.endpos;
-        plane = other.plane;
-        fraction = other.fraction;
-        contents = other.contents;
-        dispFlags = other.dispFlags;
-        allsolid = other.allsolid;
-        startsolid = other.startsolid;
-    }
-
-public:
-    CGameTrace& operator=(const CGameTrace& other)
-    {
-        startpos = other.startpos;
-        endpos = other.endpos;
-        plane = other.plane;
-        fraction = other.fraction;
-        contents = other.contents;
-        dispFlags = other.dispFlags;
-        allsolid = other.allsolid;
-        startsolid = other.startsolid;
-        fractionleftsolid = other.fractionleftsolid;
-        surface = other.surface;
-        hitgroup = other.hitgroup;
-        physicsbone = other.physicsbone;
-        worldSurfaceIndex = other.worldSurfaceIndex;
-        hit_entity = other.hit_entity;
-        hitbox = other.hitbox;
-        return *this;
-    }
+	// No copy constructors allowed
+	CGameTrace(const CGameTrace& other) :
+		fractionleftsolid(other.fractionleftsolid),
+		surface(other.surface),
+		hitgroup(other.hitgroup),
+		physicsbone(other.physicsbone),
+		worldSurfaceIndex(other.worldSurfaceIndex),
+		hit_entity(other.hit_entity),
+		hitbox(other.hitbox)
+	{
+		startpos = other.startpos;
+		endpos = other.endpos;
+		plane = other.plane;
+		fraction = other.fraction;
+		contents = other.contents;
+		dispFlags = other.dispFlags;
+		allsolid = other.allsolid;
+		startsolid = other.startsolid;
+	}
 };
 
 inline bool CGameTrace::DidHit() const
 {
-    return fraction < 1 || allsolid || startsolid;
+	return fraction < 1 || allsolid || startsolid;
 }
 
 inline bool CGameTrace::IsVisible() const
 {
-    return fraction > 0.97f;
+	return fraction > 0.97f;
 }
 
 class IEngineTrace
 {
 public:
-    virtual int   GetPointContents(const Vector &vecAbsPosition, int contentsMask = MASK_ALL, IHandleEntity** ppEntity = nullptr) = 0;
-    virtual int   GetPointContents_WorldOnly(const Vector &vecAbsPosition, int contentsMask = MASK_ALL) = 0;
-    virtual int   GetPointContents_Collideable(ICollideable *pCollide, const Vector &vecAbsPosition) = 0;
-    virtual void  ClipRayToEntity(const Ray_t &ray, unsigned int fMask, IHandleEntity *pEnt, CGameTrace *pTrace) = 0;
-    virtual void  ClipRayToCollideable(const Ray_t &ray, unsigned int fMask, ICollideable *pCollide, CGameTrace *pTrace) = 0;
-    virtual void  TraceRay(const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, CGameTrace *pTrace) = 0;
+	virtual int   GetPointContents(const Vector &vecAbsPosition, int contentsMask = MASK_ALL, IHandleEntity** ppEntity = nullptr) = 0;
+	virtual int   GetPointContents_WorldOnly(const Vector &vecAbsPosition, int contentsMask = MASK_ALL) = 0;
+	virtual int   GetPointContents_Collideable(ICollideable *pCollide, const Vector &vecAbsPosition) = 0;
+	virtual void  ClipRayToEntity(const Ray_t &ray, unsigned int fMask, IHandleEntity *pEnt, CGameTrace *pTrace) = 0;
+	virtual void  ClipRayToCollideable(const Ray_t &ray, unsigned int fMask, ICollideable *pCollide, CGameTrace *pTrace) = 0;
+	virtual void  TraceRay(const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace) = 0;
 };
 extern IEngineTrace*		g_pEngineTrace;
