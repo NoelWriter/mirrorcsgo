@@ -29,7 +29,7 @@ bool Ragebot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, Vector hitboxPos)
 
 bool Ragebot::AutoShoot(CUserCmd* pCmd)
 {
-	C_BaseCombatWeapon* pWeapon = g::pLocalEntity->GetActiveWeapon();
+	C_BaseCombatWeapon* pWeapon = g::pActiveWeapon;
 
 	if (!pWeapon)
 		return false;
@@ -253,7 +253,7 @@ void RagebotInit::DoRagebot(CUserCmd* pCmd)
 		return;
 
 	// Get some other variables
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 
 	C_BaseEntity* bestTarget = nullptr;
 	Vector hitboxPos;

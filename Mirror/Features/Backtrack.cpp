@@ -47,7 +47,7 @@ void BackTrack::legitBackTrack(CUserCmd* cmd)
 			if (entity->IsAlive())
 			{
 
-				int hitboxSaved = g_Aimbot.getHitbox(g::pLocalEntity->GetActiveWeapon());
+				int hitboxSaved = g_Aimbot.getHitbox(g::pActiveWeapon);
 				if (!hitboxSaved)
 					hitboxSaved = 8;
 

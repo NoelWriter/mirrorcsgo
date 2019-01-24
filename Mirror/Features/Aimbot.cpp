@@ -24,7 +24,7 @@ C_BaseEntity *target;
 
 
 
-void Aimbot::DoAimbot()
+void Aimbot::DoAimbot(CUserCmd* pCmd)
 {
 
 	if (g_Settings.bAimbotEnable && g_Settings.bRagebotEnable)
@@ -32,13 +32,13 @@ void Aimbot::DoAimbot()
 
 	if (g_Settings.bRagebotEnable)
 	{
-		DoRageAimbot(g::pCmd);
+		DoRageAimbot(pCmd);
 		return;
 	}
 
 	if (g_Settings.bAimbotEnable)
 	{
-		DoLegitAimbot(g::pCmd);
+		DoLegitAimbot(pCmd);
 		return;
 	}
 	
@@ -56,13 +56,13 @@ void Aimbot::DoRageAimbot(CUserCmd* pCmd) {
 		return;
 
 	// Get some other variables
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 	if (!weapon)
 		return;
 
 	int bestHitbox = 8;
 
-	bool isAttacking = (g::pCmd->buttons & IN_ATTACK || g_Settings.bRagebotAutoFire);
+	bool isAttacking = (pCmd->buttons & IN_ATTACK || g_Settings.bRagebotAutoFire);
 	if (!isAttacking)
 		return;
 
@@ -70,7 +70,7 @@ void Aimbot::DoRageAimbot(CUserCmd* pCmd) {
 	if (weapon->isGrenade() || weapon->GetCSWpnData()->weapon_type() == 0)
 		return;
 
-	new_autowall.TargetEntities();
+	new_autowall.TargetEntities(pCmd);
 }
 
 void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
@@ -86,20 +86,18 @@ void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
 		return;
 
 	// Get some other variables
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 	if (!weapon)
 		return;
 
 	int bestHitbox = 7;
 
-	bool isAttacking = (g::pCmd->buttons & IN_ATTACK);
+	bool isAttacking = (pCmd->buttons & IN_ATTACK);
 	if (!isAttacking)
 		return;
 
 	if (weapon->isGrenade() || weapon->GetCSWpnData()->weapon_type() == 0)
 		return;
-
-	StartMoveFix();
 
 	// Get a new target
 	Vector targetHitbox;
@@ -121,9 +119,8 @@ void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
 	new_autowall.traceIt(g::pLocalEntity->GetEyePosition(), target->GetBonePos(bestHitbox), MASK_SHOT | CONTENTS_GRATE, g::pLocalEntity, &tr);
 
 	if (tr.fraction > 0.97f && tr.fraction != 1.f)
-		AimAt(g::pCmd, target, bestHitbox);
+		AimAt(pCmd, target, bestHitbox);
 
-	EndMoveFix();
 }
 
 
@@ -139,7 +136,7 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 	float bestDistance = 8128.f;
 
 	// Variables we need later
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 	if (!weapon)
 		return nullptr;
 	auto localTeam = g::pLocalEntity->GetTeam();
@@ -210,7 +207,7 @@ C_BaseEntity* Aimbot::GetBestTarget(Vector& outBestPos)
 
 bool Aimbot::AutoShoot(CUserCmd* pCmd, C_BaseEntity* BestTarget)
 {
-	C_BaseCombatWeapon* pWeapon = g::pLocalEntity->GetActiveWeapon();
+	C_BaseCombatWeapon* pWeapon = g::pActiveWeapon;
 
 	if (!pWeapon)
 		return false;
@@ -316,7 +313,7 @@ void Aimbot::AimAtVec(CUserCmd* pCmd, C_BaseEntity* pEnt, Vector hitbox)
 	if (!g::pLocalEntity || !g_pEngine->IsInGame())
 		return;
 
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 	if (!weapon)
 		return;
 
@@ -338,7 +335,7 @@ void Aimbot::AimAtVec(CUserCmd* pCmd, C_BaseEntity* pEnt, Vector hitbox)
 
 	QAngle tempAimAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pEnt->GetBonePos(8));
 	float bestFov = get_fov(pCmd->viewangles, tempAimAngle);
-	float curWeaponFov = getFov(g::pLocalEntity->GetActiveWeapon());
+	float curWeaponFov = getFov(g::pActiveWeapon);
 
 	Vector actualHitBox = hitbox;
 	Vector myPos = g::pLocalEntity->GetEyePosition();
@@ -393,7 +390,7 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 	if (!g::pLocalEntity || !g_pEngine->IsInGame())
 		return;
 
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 	if (!weapon)
 		return;
 
@@ -415,7 +412,7 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 
 	QAngle tempAimAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pEnt->GetBonePos(8));
 	float bestFov = get_fov(pCmd->viewangles, tempAimAngle);
-	float curWeaponFov = getFov(g::pLocalEntity->GetActiveWeapon());
+	float curWeaponFov = getFov(g::pActiveWeapon);
 
 	if (g_Settings.bAimbotBacktrack && g_Settings.bAimbotEnable)
 	{
@@ -425,7 +422,7 @@ void Aimbot::AimAt(CUserCmd* pCmd, C_BaseEntity* pEnt, int hitbox)
 			Vector pHitboxPos = l_SavedTicks[pEnt->EntIndex()][i].hitboxPos;
 			QAngle pHitboxAngle = Utils::CalcAngle(g::pLocalEntity->GetBonePos(8), pHitboxPos);
 
-			auto newFov = g_Aimbot.get_fov(g::pCmd->viewangles, pHitboxAngle);
+			auto newFov = g_Aimbot.get_fov(pCmd->viewangles, pHitboxAngle);
 			if (l_SavedTicks[pEnt->EntIndex()][i].simtime <= g::pLocalEntity->GetSimulationTime() - 1)
 				continue;
 
@@ -518,36 +515,4 @@ float Aimbot::get_fov(const QAngle &viewAngles, const QAngle &aimAngles)
 	MakeVector(viewAngles, aim);
 	MakeVector(aimAngles, ang);
 	return RAD2DEG(acos(aim.Dot(ang) / aim.LengthSqr()));
-}
-
-void Aimbot::StartMoveFix()
-{
-	m_oldangle = g::pCmd->viewangles;
-	m_oldforward = g::pCmd->forwardmove;
-	m_oldsidemove = g::pCmd->sidemove;
-}
-
-void Aimbot::EndMoveFix()
-{
-	float yaw_delta = g::pCmd->viewangles.y - m_oldangle.y;
-	float f1;
-	float f2;
-
-	if (m_oldangle.y < 0.f)
-		f1 = 360.0f + m_oldangle.y;
-	else
-		f1 = m_oldangle.y;
-
-	if (g::pCmd->viewangles.y < 0.0f)
-		f2 = 360.0f + g::pCmd->viewangles.y;
-	else
-		f2 = g::pCmd->viewangles.y;
-
-	if (f2 < f1)
-		yaw_delta = abs(f2 - f1);
-	else
-		yaw_delta = 360.0f - abs(f1 - f2);
-	yaw_delta = 360.0f - yaw_delta;
-	g::pCmd->forwardmove = cos(DEG2RAD(yaw_delta)) * m_oldforward + cos(DEG2RAD(yaw_delta + 90.f)) * m_oldsidemove;
-	g::pCmd->sidemove = sin(DEG2RAD(yaw_delta)) * m_oldforward + sin(DEG2RAD(yaw_delta + 90.f)) * m_oldsidemove;
 }

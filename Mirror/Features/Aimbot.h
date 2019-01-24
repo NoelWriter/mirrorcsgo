@@ -6,7 +6,7 @@
 class Aimbot
 {
 public:
-	void Aimbot::DoAimbot();
+	void DoAimbot(CUserCmd * pCmd);
 	void DoRageAimbot(CUserCmd * pCmd);
 	void DoLegitAimbot(CUserCmd * pCmd);
 	bool CanHitTarget(C_BaseEntity * pTarget);

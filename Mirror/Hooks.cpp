@@ -32,19 +32,20 @@ void Hooks::Init()
 
 
     // VMTHooks
-    g_Hooks.pD3DDevice9Hook = std::make_unique<VMTHook>(reinterpret_cast<void*>(d3dDevice));
-    g_Hooks.pClientModeHook = std::make_unique<VMTHook>(g_pClientMode);
-    g_Hooks.pSurfaceHook	= std::make_unique<VMTHook>(g_pSurface);
-	g_Hooks.pRenderViewHook = std::make_unique<VMTHook>(g_RenderView);
-	g_Hooks.pModelRenderHook = std::make_unique<VMTHook>(g_pMdlRender);
+    g_Hooks.pD3DDevice9Hook			= std::make_unique<VMTHook>(reinterpret_cast<void*>(d3dDevice));
+    g_Hooks.pClientModeHook			= std::make_unique<VMTHook>(g_pClientMode);
+    g_Hooks.pSurfaceHook			= std::make_unique<VMTHook>(g_pSurface);
+	g_Hooks.pRenderViewHook			= std::make_unique<VMTHook>(g_RenderView);
+	g_Hooks.pModelRenderHook		= std::make_unique<VMTHook>(g_pMdlRender);
 
     // Hook the table functions
-    g_Hooks.pD3DDevice9Hook->Hook(vtable_indexes::reset,      Hooks::Reset);
-    g_Hooks.pD3DDevice9Hook->Hook(vtable_indexes::present,    Hooks::Present);
-    g_Hooks.pClientModeHook->Hook(vtable_indexes::createMove, Hooks::CreateMove);
-    g_Hooks.pSurfaceHook   ->Hook(vtable_indexes::lockCursor, Hooks::LockCursor);
-	g_Hooks.pRenderViewHook->Hook(vtable_indexes::sceneend,   Hooks::SceneEnd);
-	g_Hooks.pModelRenderHook->Hook(vtable_indexes::drawmodelexecute, Hooks::DrawModelExecute);
+    g_Hooks.pD3DDevice9Hook			->Hook(vtable_indexes::reset,				Hooks::Reset);
+    g_Hooks.pD3DDevice9Hook			->Hook(vtable_indexes::present,				Hooks::Present);
+    g_Hooks.pClientModeHook			->Hook(vtable_indexes::createMove,			Hooks::CreateMove);
+    g_Hooks.pSurfaceHook			->Hook(vtable_indexes::lockCursor,			Hooks::LockCursor);
+	g_Hooks.pRenderViewHook			->Hook(vtable_indexes::sceneend,			Hooks::SceneEnd);
+	g_Hooks.pModelRenderHook		->Hook(vtable_indexes::drawmodelexecute,	Hooks::DrawModelExecute);
+	g_Hooks.pClientModeHook			->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify_h);
 
     // Create event listener, no need for it now so it will remain commented.
     //const std::vector<const char*> vecEventNames = { "" };
@@ -64,7 +65,7 @@ void Hooks::Restore()
         g_Hooks.pSurfaceHook->Unhook(vtable_indexes::lockCursor);
 		g_Hooks.pRenderViewHook->Unhook(vtable_indexes::sceneend);
 		g_Hooks.pModelRenderHook->Unhook(vtable_indexes::drawmodelexecute);
-
+		g_Hooks.pClientModeHook->Unhook(vtable_indexes::framestagenotify);
 
         SetWindowLongPtr(g_Hooks.hCSGOWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_Hooks.pOriginalWNDProc));
 
@@ -76,6 +77,7 @@ void Hooks::Restore()
     g_Render.InvalidateDeviceObjects();
     g_Fonts.DeleteDeviceObjects();
 }
+
 
 
 bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_frametime, CUserCmd* pCmd)
@@ -93,27 +95,62 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
     if (!g::pLocalEntity)
         return oCreateMove;
 
-    g_Misc.OnCreateMove();
+	g::pActiveWeapon = g::pLocalEntity->GetActiveWeapon();
+	g::bSendPacket	= true;
+	g::pVisualAngles = QAngle(0, 0, 0);
+	g::pThirdperson = false;
+
+	g_Misc.doMisc();
+
+	QAngle wish_angle = pCmd->viewangles;
+	
 
     // run shit outside enginepred
     engine_prediction::RunEnginePred();
-
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//								   Aimbot
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	g_Aimbot.DoAimbot();
-
-    // run shit in enginepred
+	{
+		g_Aimbot.DoAimbot(pCmd);
+		backtracking->legitBackTrack(pCmd);
+		g_AntiAim.doAntiAim(pCmd);
+		g_Misc.FixMovement(pCmd, wish_angle);
+	}
     engine_prediction::EndEnginePred();
 
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//								   Backtrack
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	backtracking->legitBackTrack(pCmd);
+	if (g::bSendPacket)
+		g::pVisualAngles = pCmd->viewangles;
+
+	if (g::pThirdperson)
+		g::pLocalEntity->visuals_Angles() = g::pVisualAngles;
+
+	pCmd->forwardmove = g_Misc.clamp(pCmd->forwardmove, -450.f, 450.f);
+	pCmd->sidemove = g_Misc.clamp(pCmd->sidemove, -450.f, 450.f);
+	pCmd->upmove = g_Misc.clamp(pCmd->upmove, -320.f, 320.f);
+	pCmd->viewangles.Normalize();
+	
 
     return false;
 }
 
+void __stdcall Hooks::FrameStageNotify_h(ClientFrameStage_t Stage)
+{
+	static auto ofunc = g_Hooks.pClientModeHook->GetOriginal<FrameStageNotify_t>(37);
+
+	if (!g::pLocalEntity)
+	{
+		ofunc(Stage);
+		return;
+	}
+
+	if (Stage == ClientFrameStage_t::FRAME_RENDER_START)
+	{
+		if (g::pLocalEntity->IsAlive())
+		{
+			if (g_pInput->m_fCameraInThirdPerson)
+				g::pLocalEntity->visuals_Angles() = g::pVisualAngles;
+		}
+	}
+
+	ofunc(Stage);
+}
 
 void __fastcall Hooks::LockCursor(ISurface* thisptr, void* edx)
 {
@@ -235,11 +272,11 @@ void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 				{
 					g_RenderView->SetColorModulation(colorRed);
 					g_pMdlRender->ForcedMaterialOverride(zflatnorm);
-					//pEntity->draw_model(0x00000001, 255);
+					pEntity->DrawModel(0x01, 255);
 				}
 				g_RenderView->SetColorModulation(colorBlue);
 				g_pMdlRender->ForcedMaterialOverride(flatnorm);
-				//pEntity->draw_model(0x00000001, 255);
+				pEntity->DrawModel(0x01, 255);
 
 				g_pMdlRender->ForcedMaterialOverride(nullptr);
 			}

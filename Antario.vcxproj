@@ -95,10 +95,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Mirror\Features\Aimbot.cpp" />
+    <ClCompile Include="Mirror\Features\AntiAim.cpp" />
     <ClCompile Include="Mirror\Features\Autowall.cpp" />
     <ClCompile Include="Mirror\Features\Backtrack.cpp" />
     <ClCompile Include="Mirror\Features\Chams.cpp" />
     <ClCompile Include="Mirror\Features\EnginePrediction.cpp" />
+    <ClCompile Include="Mirror\Features\Misc.cpp" />
     <ClCompile Include="Mirror\Features\Ragebot.cpp" />
     <ClCompile Include="Mirror\GUI\GUI.cpp" />
     <ClCompile Include="Mirror\Hooks.cpp" />
@@ -116,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mirror\Features\Aimbot.h" />
+    <ClInclude Include="Mirror\Features\AntiAim.h" />
     <ClInclude Include="Mirror\Features\Autowall.h" />
     <ClInclude Include="Mirror\Features\Backtrack.h" />
     <ClInclude Include="Mirror\Features\Chams.h" />

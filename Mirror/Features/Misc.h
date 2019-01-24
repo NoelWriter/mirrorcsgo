@@ -5,22 +5,32 @@
 class Misc
 {
 public:
-    void OnCreateMove()
-    {
-        this->pCmd   = g::pCmd;
-        this->pLocal = g::pLocalEntity;
+	void SinCos(float a, float * s, float * c);
+	void AngleVectors(const QAngle & angles, Vector & forward, Vector & right, Vector & up);
+	void Misc::FixMovement(CUserCmd *usercmd, QAngle &wish_angle);
 
-        if (g_Settings.bBhopEnabled)
-            this->DoBhop();
-        // sum future shit
-    };
+	void doMisc();
+
+	void RankRevealAll();
+
+	void DoThirdPerson();
+
+	void PositionCamera(C_BaseEntity * pPlayer, QAngle angles);
+
+	static void UTIL_TraceHull(Vector & vecAbsStart, Vector & vecAbsEnd, Vector & hullMin, Vector & hullMax, unsigned int mask, ITraceFilter * pFilter, trace_t * ptr);
+
+	static Vector GetDesiredCameraOffset();
+
+	template<class T, class U>
+	T clamp(T in, U low, U high);
 private:
-    CUserCmd*     pCmd;
-    C_BaseEntity* pLocal;
 
     void DoBhop() const
     {
-        if (this->pLocal->GetMoveType() == MoveType_t::MOVETYPE_LADDER)
+		if (!g::pLocalEntity->IsAlive())
+			return;
+
+        if (g::pLocalEntity->GetMoveType() == MoveType_t::MOVETYPE_LADDER)
             return;
 
         static bool bLastJumped = false;
@@ -29,15 +39,15 @@ private:
         if (!bLastJumped && bShouldFake)
         {
             bShouldFake = false;
-            pCmd->buttons |= IN_JUMP;
+			g::pCmd->buttons |= IN_JUMP;
         }
-        else if (pCmd->buttons & IN_JUMP)
+        else if (g::pCmd->buttons & IN_JUMP)
         {
-            if (pLocal->GetFlags() & FL_ONGROUND)
+            if (g::pLocalEntity->GetFlags() & FL_ONGROUND)
                 bShouldFake = bLastJumped = true;
             else 
             {
-                pCmd->buttons &= ~IN_JUMP;
+				g::pCmd->buttons &= ~IN_JUMP;
                 bLastJumped = false;
             }
         }

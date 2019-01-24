@@ -41,16 +41,18 @@ void MenuMain::Initialize()
 			{
 				sectRageAimbotMain->AddCheckBox("Enable", &g_Settings.bRagebotEnable);
 				sectRageAimbotMain->AddCheckBox("Autofire", &g_Settings.bRagebotAutoFire);
-				sectRageAimbotMain->AddSlider("Minimum damage", &g_Settings.bRagebotMinDamage, 1.f, 100);
+				sectRageAimbotMain->AddSlider("Minimum Damage", &g_Settings.bRagebotMinDamage, 1.f, 100);
 				sectRageAimbotMain->AddCheckBox("Hitchance", &g_Settings.bRagebotHitchance);
 				sectRageAimbotMain->AddSlider("Hitchance Amount", &g_Settings.bRagebotHitchanceA, 1.f, 100);
 				sectRageAimbotMain->AddCheckBox("Silent", &g_Settings.bRagebotSilent);
 				sectRageAimbotMain->AddCheckBox("Autowall", &g_Settings.bRagebotAutowall);
 				sectRageAimbotMain->AddCheckBox("Backtrack", &g_Settings.bRagebotBacktrack);
+				sectRageAimbotMain->AddCheckBox("Autostop", &g_Settings.bRagebotAutostop);
 			}
 			auto sectAntiAim = tab2->AddSection("Anti-Aim Settings", 1.f);
 			{
-
+				sectAntiAim->AddCheckBox("Enable", &g_Settings.bRagebotAAEnable);
+				sectAntiAim->AddCombo("Yaw", &g_Settings.bRagebotAAYawReal, std::vector<std::string>{ "Off", "Backwards", "Backwards Cycle", "Freestanding" });
 			}
 		}
 		mainWindow->AddChild(tab2);
@@ -66,6 +68,7 @@ void MenuMain::Initialize()
 				sectPlayer->AddCheckBox("Names", &g_Settings.bEspPName);
 				sectPlayer->AddCheckBox("Bones", &g_Settings.bEspPBones);
 				sectPlayer->AddCheckBox("Chams", &g_Settings.bEspPChams);
+				sectPlayer->AddCheckBox("Health", &g_Settings.bEspPHealth);
 			}
 			auto sectWorld = tab3->AddSection("World", 1.f);
 			{
@@ -81,6 +84,7 @@ void MenuMain::Initialize()
 			{
 				
 				sectMisc->AddCheckBox("Bhop", &g_Settings.bBhopEnabled);
+				sectMisc->AddCheckBox("Third Person", &g_Settings.bMiscThirdPerson);
 				sectMisc->AddDummy();
 				sectMisc->AddButton("Detach", Detach);
 			}

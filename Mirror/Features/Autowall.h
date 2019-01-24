@@ -39,15 +39,19 @@ public:
 
 	void ClipTraceToPlayers(const Vector & vecAbsStart, const Vector & vecAbsEnd, unsigned int mask, ITraceFilter * filter, CGameTrace * tr);
 
-	void TargetEntities();
+	void TargetEntities(CUserCmd * pCmd);
 
-	bool TargetSpecificEnt(C_BaseEntity * pEnt);
+	bool TargetSpecificEnt(C_BaseEntity * pEnt, CUserCmd * pCmd);
 
 	bool HitChance(QAngle angles, C_BaseEntity * ent, float chance);
 
 	bool CheckTarget(int i);
 
 	Vector CalculateBestPoint(C_BaseEntity * player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[]);
+
+	void AutoStop();
+
+	int prev_aimtarget = NULL;
 
 };
 extern autowall_2 new_autowall;

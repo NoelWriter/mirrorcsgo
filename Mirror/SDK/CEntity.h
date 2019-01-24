@@ -30,6 +30,11 @@ private:
     }
 
 public:
+	static __forceinline C_BaseEntity* GetEntityByIndex(int index)
+	{
+		return static_cast<C_BaseEntity*>(g_pEntityList->GetClientEntity(index));
+	}
+
     C_BaseCombatWeapon* GetActiveWeapon()
     {
         static int m_hActiveWeapon = g_pNetvars->GetOffset("DT_BaseCombatCharacter", "m_hActiveWeapon");
@@ -163,6 +168,11 @@ public:
 		return *(QAngle*)((DWORD)this + 0x302C);
 	}
 
+	QAngle &C_BaseEntity::visuals_Angles()
+	{
+		return *(QAngle*)((uintptr_t)this + g_pNetvars->GetOffset("CCSPlayer", "deadflag") + 4);
+	}
+
 	bool C_BaseEntity::IsBehindSmoke(C_BaseEntity* localPlayer) {
 		if (!localPlayer)
 			return false;
@@ -190,6 +200,12 @@ public:
 	{
 		static int m_bHasHelmet = g_pNetvars->GetOffset("DT_CSPlayer", "m_bHasHelmet");
 		return GetValue<bool>(m_bHasHelmet);
+	}
+
+	bool hasHeavyArmor()
+	{
+		static int m_bHasHeavyArmor = g_pNetvars->GetOffset("DT_CSPlayer", "m_bHasHeavyArmor");
+		return GetValue<bool>(m_bHasHeavyArmor);
 	}
 
 	int GetArmor()
@@ -306,6 +322,7 @@ public:
 		case ItemDefinitionIndex::WEAPON_AK47:
 		case ItemDefinitionIndex::WEAPON_AUG:
 		case ItemDefinitionIndex::WEAPON_GALILAR:
+		case ItemDefinitionIndex::WEAPON_FAMAS:
 		case ItemDefinitionIndex::WEAPON_M4A1:
 		case ItemDefinitionIndex::WEAPON_M4A1_SILENCER:
 		case ItemDefinitionIndex::WEAPON_MAC10:
@@ -313,7 +330,7 @@ public:
 		case ItemDefinitionIndex::WEAPON_MP7:
 		case ItemDefinitionIndex::WEAPON_MP9:
 		case ItemDefinitionIndex::WEAPON_P90:
-		case ItemDefinitionIndex::WEAPON_SG556:
+		case ItemDefinitionIndex::WEAPON_SG553:
 		case ItemDefinitionIndex::WEAPON_UMP45:
 			return true;
 

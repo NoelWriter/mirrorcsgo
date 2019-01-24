@@ -238,7 +238,7 @@ float autowall_2::BestHitPoint(C_BaseEntity *player, int prioritized, float minD
 	Vector top = Vector(0, 0, 1);
 	Vector bot = Vector(0, 0, -1);
 
-	const float POINT_SCALE = 0.4f;
+	const float POINT_SCALE = 0.5f;
 
 	//TODO: Add multipoint feature.
 	if (true)
@@ -301,7 +301,7 @@ float autowall_2::GetDamageVec(const Vector &vecPoint, C_BaseEntity *player, int
 
 	data.direction.Normalized();
 
-	auto weap = g::pLocalEntity->GetActiveWeapon();
+	auto weap = g::pActiveWeapon;
 	if (SimulateFireBullet(weap, data, player, hitbox))
 		damage = data.current_damage;
 
@@ -362,7 +362,7 @@ bool autowall_2::SimulateFireBullet(C_BaseCombatWeapon *weap, FireBulletData &da
 
 	data.penetrate_count = 4;
 	data.trace_length = 0.0f;
-	WeaponInfo_t *weaponData = g::pLocalEntity->GetActiveWeapon()->GetCSWpnData();
+	WeaponInfo_t *weaponData = g::pActiveWeapon->GetCSWpnData();
 
 	if (weaponData == NULL)
 		return false;
@@ -603,7 +603,7 @@ bool autowall_2::IsBreakableEntity(C_BaseEntity *ent)
 
 void autowall_2::ScaleDamage(int hitgroup, C_BaseEntity *player, float weapon_armor_ratio, float &current_damage)
 {
-	bool heavArmor = player->hasHelmet();
+	bool heavArmor = player->hasHeavyArmor();
 	int armor = player->GetArmor();
 
 	switch (hitgroup)
@@ -719,29 +719,35 @@ void autowall_2::ClipTraceToPlayers(const Vector &vecAbsStart, const Vector &vec
 	}
 }
 
-void autowall_2::TargetEntities()
+void autowall_2::TargetEntities(CUserCmd* pCmd)
 {
-	auto weap = g::pLocalEntity->GetActiveWeapon();
+	auto weap = g::pActiveWeapon;
 	static C_BaseCombatWeapon *oldWeapon; // what is this for?
 	if (weap != oldWeapon)
 	{
 		oldWeapon = weap;
-		g::pCmd->buttons &= ~IN_ATTACK;
+		pCmd->buttons &= ~IN_ATTACK;
 		return;
 	}
 
-	if (weap->isPistol() && g::pCmd->tick_count % 2)
+	if (weap->isPistol() && pCmd->tick_count % 2)
 	{
 		static int lastshot;
-		if (g::pCmd->buttons & IN_ATTACK)
+		if (pCmd->buttons & IN_ATTACK)
 			lastshot++;
 
-		if (!g::pCmd->buttons & IN_ATTACK || lastshot > 1)
+		if (!pCmd->buttons & IN_ATTACK || lastshot > 1)
 		{
-			g::pCmd->buttons &= ~IN_ATTACK;
+			pCmd->buttons &= ~IN_ATTACK;
 			lastshot = 0;
 		}
 		return;
+	}
+
+	if (prev_aimtarget && CheckTarget(prev_aimtarget))
+	{
+		if (TargetSpecificEnt(C_BaseEntity::GetEntityByIndex(prev_aimtarget), pCmd))
+			return;
 	}
 
 	for (int i = 1; i < g_pEngine->GetMaxClients(); i++)
@@ -752,13 +758,13 @@ void autowall_2::TargetEntities()
 
 		C_BaseEntity *player = g_pEntityList->GetClientEntity(i);
 
-		if (TargetSpecificEnt(player))
+		if (TargetSpecificEnt(player, pCmd))
 			return;
 	}
 }
 
 int realHitboxSpot2[] = { 0, 1, 2, 3 };
-bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt)
+bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 {
 	int i = pEnt->EntIndex();
 	//auto firedShots = g::pLocalEntity->f;
@@ -767,13 +773,13 @@ bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt)
 
 	Vector vecTarget;
 
-	C_BaseCombatWeapon* pWeapon = g::pLocalEntity->GetActiveWeapon();
+	C_BaseCombatWeapon* pWeapon = g::pActiveWeapon;
 
 	if (!pWeapon)
 		return false;
 
 	float flServerTime = g::pLocalEntity->GetTickBase() * g_pGlobalVars->intervalPerTick;
-	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(g::pCmd->buttons & IN_RELOAD);
+	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(pCmd->buttons & IN_RELOAD);
 
 	// Disgusting ass codes, can't think of a cleaner way now though. FIX ME.
 	bool LagComp_Hitchanced = false;
@@ -787,7 +793,7 @@ bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt)
 		if (!pEnt->SetupBones2(matrix, 128, 256, pEnt->GetSimulationTime()))
 			return false;
 
-		vecTarget = CalculateBestPoint(pEnt, iHitbox, g_Settings.bRagebotMinDamage, true, matrix);
+		vecTarget = CalculateBestPoint(pEnt, iHitbox, g_Settings.bRagebotMinDamage, false, matrix);
 	}
 
 	// Invalid target/no hitable points at all.
@@ -809,22 +815,27 @@ bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt)
 	QAngle new_aim_angles = Utils::CalcAngle(g::pLocalEntity->GetEyePosition(), vecTarget) - (g::pLocalEntity->GetPunchAngles() * 2.f);
 	Utils::ClampViewAngles(new_aim_angles);
 
-	g::pCmd->viewangles = new_aim_angles;
+	pCmd->viewangles = new_aim_angles;
 	if (!g_Settings.bRagebotSilent)
 		g_pEngine->SetViewAngles(new_aim_angles);
 
 	if (canShoot)
 	{
+		prev_aimtarget = pEnt->EntIndex();
+
 		if (g_Settings.bRagebotAutoFire)
 		{
 			if (g_Settings.bRagebotHitchance)
 			{
 				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA))
-					g::pCmd->buttons |= IN_ATTACK;
+					pCmd->buttons |= IN_ATTACK;
+				else
+					AutoStop();
 			}
 			else
 			{
-				g::pCmd->buttons |= IN_ATTACK;
+				AutoStop();
+				pCmd->buttons |= IN_ATTACK;
 			}
 		}
 	}
@@ -843,7 +854,7 @@ float RandomFloat(float min, float max)
 
 bool autowall_2::HitChance(QAngle angles, C_BaseEntity *ent, float chance)
 {
-	auto weapon = g::pLocalEntity->GetActiveWeapon();
+	auto weapon = g::pActiveWeapon;
 
 	if (!weapon)
 		return false;
@@ -992,5 +1003,24 @@ Vector autowall_2::CalculateBestPoint(C_BaseEntity *player, int prioritized, flo
 			}
 		}
 		return vecOutput;
+	}
+}
+
+void autowall_2::AutoStop()
+{
+	if (!g_Settings.bRagebotAutostop)
+		return;
+
+	if (g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3))
+	{
+		g::pCmd->buttons |= IN_WALK;
+		g::pCmd->forwardmove = -g::pCmd->forwardmove;
+		g::pCmd->sidemove = -g::pCmd->sidemove;
+		g::pCmd->upmove = 0;
+	}
+	else
+	{
+		g::pCmd->forwardmove = 0;
+		g::pCmd->sidemove = 0;
 	}
 }

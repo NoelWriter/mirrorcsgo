@@ -28,7 +28,7 @@ public:
     virtual ClientShadowHandle_t       GetShadowHandle() const = 0;
     virtual ClientRenderHandle_t&      RenderHandle() = 0;
     virtual model_t*                   GetModel() const = 0;
-    virtual int                        DrawModel(int flags, const RenderableInstance_t &instance) = 0;
+	virtual int                        DrawModel(int flags, const int /*RenderableInstance_t*/ &instance) = 0;
     virtual int                        GetBody() = 0;
     virtual void                       GetColorModulation(float* color) = 0;
     virtual bool                       LODTest() = 0;

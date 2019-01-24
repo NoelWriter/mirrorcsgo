@@ -9,6 +9,7 @@
 #include "GUI\GUI.h"
 #include "SDK\IVModelRender.hpp"	
 #include "SDK\IVModelInfoClient.hpp"
+#include "SDK\IBaseClientDll.h"
 
 namespace vtable_indexes
 {
@@ -18,6 +19,7 @@ namespace vtable_indexes
 	constexpr auto lockCursor   = 67;
 	constexpr auto sceneend		= 9;
 	constexpr auto drawmodelexecute = 21;
+	constexpr auto framestagenotify = 37;
 }
 
 class VMTHook;
@@ -39,7 +41,7 @@ public:
     static LRESULT  __stdcall   WndProc   (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void		__fastcall	SceneEnd  (void *pEcx, void *pEdx);
 	static void		__stdcall	DrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld);
-
+	static void		__stdcall	FrameStageNotify_h(ClientFrameStage_t stage);
 private:
     /*---------------------------------------------*/
     /*-------------VMT Hook pointers---------------*/
@@ -50,6 +52,7 @@ private:
     std::unique_ptr<VMTHook> pSurfaceHook;
 	std::unique_ptr<VMTHook> pRenderViewHook;
 	std::unique_ptr<VMTHook> pModelRenderHook;
+	//std::unique_ptr<VMTHook> pFrameStageNotifyHook;
 
     /*---------------------------------------------*/
     /*-------------Hook prototypes-----------------*/
@@ -60,6 +63,7 @@ private:
     typedef long (__stdcall*  Reset_t)      (IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
     typedef long (__stdcall*  Present_t)    (IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
 	typedef void (__thiscall *SceneEnd_t)	(void *pEcx);
+	typedef void (__stdcall *FrameStageNotify_t)(ClientFrameStage_t);
 	using DrawModelExecute_t = void(__thiscall*)(IVModelRender*, IMatRenderContext*, const DrawModelState_t&, const ModelRenderInfo_t&, matrix3x4_t*);
 
 private:

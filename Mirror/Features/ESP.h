@@ -13,8 +13,8 @@ private:
 	void Radar(C_BaseEntity * pEnt);
     void RenderName(C_BaseEntity* pEnt, int iterator);
     void RenderWeaponName(C_BaseEntity* pEnt);
-
 	void DrawBoneESP(C_BaseEntity * pBaseEntity, int it);
+	void DrawHealth(C_BaseEntity * pEnt);
 
     int localTeam{};
     Color teamColor{ 195, 240, 100, 255 };

@@ -28,6 +28,7 @@ public:
     bool  bCheatActive			= true;
     bool  bMenuOpened			= false;
 	bool  bBhopEnabled			= false;
+	bool  bMiscThirdPerson		= false;
 
 	//ESP
 	bool  bEspEnable			= false;
@@ -38,6 +39,7 @@ public:
     bool  bEspPWeapon			= false;
 	bool  bEspPBones			= false;
 	bool  bEspPChams			= false;
+	bool  bEspPHealth			= false;
 
 	bool  bEspWRadar			= false;
 	bool  bEspWGrenade			= false;
@@ -48,18 +50,18 @@ public:
 	int   bAimbotBacktrackTicks = 1;
 
 	//Rifle
-	float bAimbotFovRifle		= 5.f;
-	float bAimbotSmoothRifle	= 5.f;
+	float bAimbotFovRifle		= 3.f;
+	float bAimbotSmoothRifle	= 7.f;
 	int   bAimbotHitboxRifle	= 0;
 
 	//Sniper
-	float bAimbotFovSniper		= 5.f;
-	float bAimbotSmoothSniper	= 5.f;
+	float bAimbotFovSniper		= 3.f;
+	float bAimbotSmoothSniper	= 3.f;
 	int   bAimbotHitboxSniper	= 2;
 
 	//Pistol
-	float bAimbotFovPistol		= 5.f;
-	float bAimbotSmoothPistol	= 5.f;
+	float bAimbotFovPistol		= 2.f;
+	float bAimbotSmoothPistol	= 8.f;
 	int   bAimbotHitboxPistol	= 0;
 
 	//Ragebot
@@ -72,6 +74,10 @@ public:
 	bool  bRagebotSilent		= false;
 	bool  bRagebotAutowall      = false;
 	bool  bRagebotBacktrack     = false;
+	bool  bRagebotAutostop		= false;
+
+	bool  bRagebotAAEnable		= false;
+	int   bRagebotAAYawReal		= 0;
 };
 
 extern Settings g_Settings;
