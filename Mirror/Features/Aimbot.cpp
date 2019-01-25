@@ -22,8 +22,6 @@ QAngle m_oldangle;
 // Aimbot variables
 C_BaseEntity *target;
 
-
-
 void Aimbot::DoAimbot(CUserCmd* pCmd)
 {
 
@@ -70,7 +68,7 @@ void Aimbot::DoRageAimbot(CUserCmd* pCmd) {
 	if (weapon->isGrenade() || weapon->GetCSWpnData()->weapon_type() == 0)
 		return;
 
-	new_autowall.TargetEntities(pCmd);
+	g_RageWall.TargetEntities(pCmd);
 }
 
 void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
@@ -116,7 +114,7 @@ void Aimbot::DoLegitAimbot(CUserCmd* pCmd) {
 
 	// Let's check if wee can see the player, if we can, we aim.
 	CGameTrace tr;
-	new_autowall.traceIt(g::pLocalEntity->GetEyePosition(), target->GetBonePos(bestHitbox), MASK_SHOT | CONTENTS_GRATE, g::pLocalEntity, &tr);
+	g_RageWall.traceIt(g::pLocalEntity->GetEyePosition(), target->GetBonePos(bestHitbox), MASK_SHOT | CONTENTS_GRATE, g::pLocalEntity, &tr);
 
 	if (tr.fraction > 0.97f && tr.fraction != 1.f)
 		AimAt(pCmd, target, bestHitbox);
@@ -264,7 +262,7 @@ bool Aimbot::CanHitTarget(C_BaseEntity* pTarget)
 	for (const int &hitbox : hitboxes)
 	{
 		Vector pTargetPos = pTarget->GetBonePos(hitbox);
-		if (new_autowall.CanHit(pTargetPos))
+		if (g_RageWall.CanHit(pTargetPos))
 			return true;
 	}
 	return false;

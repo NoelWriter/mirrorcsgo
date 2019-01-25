@@ -1,8 +1,10 @@
 ﻿#include <thread>
+#include <intrin.h>
 #include "Hooks.h"
 #include "Utils\Utils.h"
 #include "Features\Features.h"
 #include "SDK\IVModelRender.hpp"
+#include "Utils/ICvar.h"
 
 Misc     g_Misc;
 Hooks    g_Hooks;
@@ -37,6 +39,7 @@ void Hooks::Init()
     g_Hooks.pSurfaceHook			= std::make_unique<VMTHook>(g_pSurface);
 	g_Hooks.pRenderViewHook			= std::make_unique<VMTHook>(g_RenderView);
 	g_Hooks.pModelRenderHook		= std::make_unique<VMTHook>(g_pMdlRender);
+	g_Hooks.pConvarHook				= std::make_unique<VMTHook>(g_pCVar->FindVar("sv_cheats"));
 
     // Hook the table functions
     g_Hooks.pD3DDevice9Hook			->Hook(vtable_indexes::reset,				Hooks::Reset);
@@ -45,7 +48,9 @@ void Hooks::Init()
     g_Hooks.pSurfaceHook			->Hook(vtable_indexes::lockCursor,			Hooks::LockCursor);
 	g_Hooks.pRenderViewHook			->Hook(vtable_indexes::sceneend,			Hooks::SceneEnd);
 	g_Hooks.pModelRenderHook		->Hook(vtable_indexes::drawmodelexecute,	Hooks::DrawModelExecute);
-	g_Hooks.pClientModeHook			->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify_h);
+	g_Hooks.pClientModeHook			->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify);
+	g_Hooks.pClientModeHook			->Hook(vtable_indexes::overrideView,		Hooks::OverrideView); 
+	g_Hooks.pConvarHook				->Hook(vtable_indexes::getboolsvcheats,		Hooks::GetBool_SVCheats_h);
 
     // Create event listener, no need for it now so it will remain commented.
     //const std::vector<const char*> vecEventNames = { "" };
@@ -66,6 +71,8 @@ void Hooks::Restore()
 		g_Hooks.pRenderViewHook->Unhook(vtable_indexes::sceneend);
 		g_Hooks.pModelRenderHook->Unhook(vtable_indexes::drawmodelexecute);
 		g_Hooks.pClientModeHook->Unhook(vtable_indexes::framestagenotify);
+		g_Hooks.pClientModeHook->Unhook(vtable_indexes::overrideView);
+		g_Hooks.pConvarHook->Unhook(vtable_indexes::getboolsvcheats);
 
         SetWindowLongPtr(g_Hooks.hCSGOWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_Hooks.pOriginalWNDProc));
 
@@ -83,7 +90,7 @@ void Hooks::Restore()
 bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_frametime, CUserCmd* pCmd)
 {
     // Call original createmove before we start screwing with it
-    static auto oCreateMove = g_Hooks.pClientModeHook->GetOriginal<CreateMove_t>(24);
+    static auto oCreateMove = g_Hooks.pClientModeHook->GetOriginal<CreateMove_t>(vtable_indexes::createMove);
     oCreateMove(thisptr, edx, sample_frametime, pCmd);
 
     if (!pCmd || !pCmd->command_number)
@@ -115,11 +122,8 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	}
     engine_prediction::EndEnginePred();
 
-	if (g::bSendPacket)
-		g::pVisualAngles = pCmd->viewangles;
 
-	if (g::pThirdperson)
-		g::pLocalEntity->visuals_Angles() = g::pVisualAngles;
+	g::pVisualAngles = pCmd->viewangles;
 
 	pCmd->forwardmove = g_Misc.clamp(pCmd->forwardmove, -450.f, 450.f);
 	pCmd->sidemove = g_Misc.clamp(pCmd->sidemove, -450.f, 450.f);
@@ -130,9 +134,9 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
     return false;
 }
 
-void __stdcall Hooks::FrameStageNotify_h(ClientFrameStage_t Stage)
+void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 {
-	static auto ofunc = g_Hooks.pClientModeHook->GetOriginal<FrameStageNotify_t>(37);
+	static auto ofunc = g_Hooks.pClientModeHook->GetOriginal<FrameStageNotify_t>(vtable_indexes::framestagenotify);
 
 	if (!g::pLocalEntity)
 	{
@@ -145,7 +149,7 @@ void __stdcall Hooks::FrameStageNotify_h(ClientFrameStage_t Stage)
 		if (g::pLocalEntity->IsAlive())
 		{
 			if (g_pInput->m_fCameraInThirdPerson)
-				g::pLocalEntity->visuals_Angles() = g::pVisualAngles;
+				g::pLocalEntity->GetVAngles() = g::pVisualAngles;
 		}
 	}
 
@@ -165,7 +169,7 @@ void __fastcall Hooks::LockCursor(ISurface* thisptr, void* edx)
 
 HRESULT __stdcall Hooks::Reset(IDirect3DDevice9* pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
-    static auto oReset = g_Hooks.pD3DDevice9Hook->GetOriginal<Reset_t>(16);
+    static auto oReset = g_Hooks.pD3DDevice9Hook->GetOriginal<Reset_t>(vtable_indexes::reset);
 
     if (g_Hooks.bInitializedDrawManager)
     {
@@ -224,16 +228,16 @@ HRESULT __stdcall Hooks::Present(IDirect3DDevice9* pDevice, const RECT* pSourceR
     stateBlock->Release();
     pDevice   ->SetVertexDeclaration(vertDec);
 
-    static auto oPresent = g_Hooks.pD3DDevice9Hook->GetOriginal<Present_t>(17);
+    static auto oPresent = g_Hooks.pD3DDevice9Hook->GetOriginal<Present_t>(vtable_indexes::present);
     return oPresent(pDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
 
-float colorRed[3] = { 1, 0 ,0 };
-float colorBlue[3] = { 0, 0 ,1 };
+float colorHidden[3] = { 0.9f, 0.7f, 0.4f };
+float colorVisible[3] = {  0.8f, 0.9f, 0.35f };
 
 void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 {
-	static auto oSceneEnd = g_Hooks.pRenderViewHook->GetOriginal<SceneEnd_t>(9);
+	static auto oSceneEnd = g_Hooks.pRenderViewHook->GetOriginal<SceneEnd_t>(vtable_indexes::sceneend);
 
 	if (!g::pLocalEntity || !g_pEngine->IsConnected() || !g_pEngine->IsInGame())
 		return;
@@ -268,13 +272,13 @@ void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 
 			if (pEntity->IsAlive() && pEntity->GetHealth() > 0 && pEntity->GetTeam() != g::pLocalEntity->GetTeam())
 			{
-				if (true)
+				if (g_Settings.bEspPChamsInvisible)
 				{
-					g_RenderView->SetColorModulation(colorRed);
+					g_RenderView->SetColorModulation(colorHidden);
 					g_pMdlRender->ForcedMaterialOverride(zflatnorm);
 					pEntity->DrawModel(0x01, 255);
 				}
-				g_RenderView->SetColorModulation(colorBlue);
+				g_RenderView->SetColorModulation(colorVisible);
 				g_pMdlRender->ForcedMaterialOverride(flatnorm);
 				pEntity->DrawModel(0x01, 255);
 
@@ -287,14 +291,46 @@ void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 	return oSceneEnd(pEcx);
 }
 
+void __stdcall Hooks::OverrideView(CViewSetup* pSetup)
+{
+	static auto oOverrideView = g_Hooks.pRenderViewHook->GetOriginal<OverrideView_t>(vtable_indexes::overrideView);
+
+	if (g_pEngine->IsInGame() && g_pEngine->IsConnected())
+	{
+		if (g::pLocalEntity)
+		{
+			g_Misc.DoThirdPerson();
+		}
+	}
+
+	return oOverrideView(pSetup);
+}
+
 void __stdcall Hooks::DrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld)
 {
-	static auto oDME = g_Hooks.pModelRenderHook->GetOriginal<DrawModelExecute_t>(21);
+	static auto oDME = g_Hooks.pModelRenderHook->GetOriginal<DrawModelExecute_t>(vtable_indexes::drawmodelexecute);
 
 	if (!g::pLocalEntity || !g_pEngine->IsInGame() || !g_pEngine->IsConnected())
 		oDME(g_pMdlRender, ctx, state, pInfo, pCustomBoneToWorld);
 
 	oDME(g_pMdlRender, ctx, state, pInfo, pCustomBoneToWorld);
+}
+
+bool __fastcall Hooks::GetBool_SVCheats_h(PVOID pConVar, int edx)
+{
+	static auto oGetBool = g_Hooks.pConvarHook->GetOriginal<GetBool_t>(vtable_indexes::getboolsvcheats);
+	// xref : "Pitch: %6.1f   Yaw: %6.1f   Dist: %6.1f %16s"
+	static DWORD CAM_THINK = (DWORD)Utils::FindSignature(("client_panorama.dll"), "85 C0 75 30 38 86");
+	if (!pConVar)
+		return false;
+
+	if (g_Settings.bMiscThirdPerson)
+	{
+		if ((DWORD)_ReturnAddress() == CAM_THINK)
+			return true;
+	}
+
+	return oGetBool(pConVar);
 }
 
 LRESULT Hooks::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

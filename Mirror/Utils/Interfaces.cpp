@@ -70,6 +70,6 @@ namespace interfaces
 		g_pMdlRender		= CaptureInterface<IVModelRender>("engine.dll", "VEngineModel016");
 		g_pPhysSurface		= CaptureInterface<IPhysicsSurfaceProps>("vphysics.dll", "VPhysicsSurfaceProps001");
 		g_pCVar				= CaptureInterface<ICVar>("vstdlib.dll", "VEngineCvar007");
-		g_pInput			= *reinterpret_cast<CInput**>((Utils::FindSignature("client_panorama.dll", "B9 ? ? ? ? 8B 40 38 FF D0 84 C0 0F 85") + 1));
+		g_pInput			= *reinterpret_cast<CInput**>((Utils::FindSignature("client_panorama.dll", "B9 ? ? ? ? F3 0F 11 04 24 FF 50 10") + 1));
     }
 }

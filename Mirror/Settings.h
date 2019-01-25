@@ -39,6 +39,7 @@ public:
     bool  bEspPWeapon			= false;
 	bool  bEspPBones			= false;
 	bool  bEspPChams			= false;
+	bool  bEspPChamsInvisible	= false;
 	bool  bEspPHealth			= false;
 
 	bool  bEspWRadar			= false;

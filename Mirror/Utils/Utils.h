@@ -270,6 +270,22 @@ public:
 		return ret;
 	}
 
+	static Vector CalcVecAngle(Vector src, Vector dst) {
+		Vector angles;
+
+		Vector delta = src - dst;
+		float hyp = delta.Length2D();
+
+		angles.y = std::atanf(delta.y / delta.x) * 57.2957795131f;
+		angles.x = std::atanf(-delta.z / hyp) * -57.2957795131f;
+		angles.z = 0.0f;
+
+		if (delta.x >= 0.0f)
+			angles.y += 180.0f;
+
+		return angles;
+	}
+
     /**
     *   WorldToScreen - Converts game coordinates to screen
     *   @origin: 3D coordinates to be converted

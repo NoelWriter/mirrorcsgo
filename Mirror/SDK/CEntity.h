@@ -168,9 +168,10 @@ public:
 		return *(QAngle*)((DWORD)this + 0x302C);
 	}
 
-	QAngle &C_BaseEntity::visuals_Angles()
+	QAngle &GetVAngles()
 	{
-		return *(QAngle*)((uintptr_t)this + g_pNetvars->GetOffset("CCSPlayer", "deadflag") + 4);
+		static auto deadflag = g_pNetvars->GetOffset("DT_BasePlayer", "deadflag");
+		return GetValue<QAngle>(deadflag + 0x4);
 	}
 
 	bool C_BaseEntity::IsBehindSmoke(C_BaseEntity* localPlayer) {

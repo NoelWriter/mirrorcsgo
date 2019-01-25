@@ -130,8 +130,6 @@ void AngleVectors(const QAngle &angles, Vector& forward, Vector& right, Vector& 
 	up.z = (cr * cp);
 }
 
-
-
 typedef CGameTrace trace_t;
 
 inline bool CGameTrace::DidHitWorld() const
@@ -143,7 +141,7 @@ inline bool CGameTrace::DidHitNonWorldEntity() const
 	return hit_entity != NULL && !DidHitWorld();
 }
 
-autowall_2 new_autowall;
+RageWall g_RageWall;
 
 #define HITGROUP_GENERIC    0
 #define HITGROUP_HEAD        1
@@ -207,7 +205,7 @@ void VectorTransform(const Vector& in1, const matrix3x4_t& in2, Vector& out)
 	out[2] = in1.Dot(in2[2]) + in2[2][3];
 }
 
-float autowall_2::BestHitPoint(C_BaseEntity *player, int prioritized, float minDmg, mstudiohitboxset_t *hitset, matrix3x4_t matrix[], Vector &vecOut)
+float RageWall::BestHitPoint(C_BaseEntity *player, int prioritized, float minDmg, mstudiohitboxset_t *hitset, matrix3x4_t matrix[], Vector &vecOut)
 {
 	mstudiobbox_t *hitbox = hitset->pHitbox(prioritized);
 	if (!hitbox)
@@ -285,7 +283,7 @@ float autowall_2::BestHitPoint(C_BaseEntity *player, int prioritized, float minD
 	return flHigherDamage;
 }
 
-float autowall_2::GetDamageVec(const Vector &vecPoint, C_BaseEntity *player, int hitbox)
+float RageWall::GetDamageVec(const Vector &vecPoint, C_BaseEntity *player, int hitbox)
 {
 	float damage = 0.f;
 
@@ -308,7 +306,7 @@ float autowall_2::GetDamageVec(const Vector &vecPoint, C_BaseEntity *player, int
 	return damage;
 }
 
-void autowall_2::traceIt(Vector &vecAbsStart, Vector &vecAbsEnd, unsigned int mask, C_BaseEntity *ign, CGameTrace *tr)
+void RageWall::traceIt(Vector &vecAbsStart, Vector &vecAbsEnd, unsigned int mask, C_BaseEntity *ign, CGameTrace *tr)
 {
 	Ray_t ray;
 
@@ -320,7 +318,7 @@ void autowall_2::traceIt(Vector &vecAbsStart, Vector &vecAbsEnd, unsigned int ma
 	g_pEngineTrace->TraceRay(ray, mask, &filter, tr);
 }
 
-bool autowall_2::SimulateFireBullet(C_BaseCombatWeapon *weap, FireBulletData &data, C_BaseEntity *player, int hitbox)
+bool RageWall::SimulateFireBullet(C_BaseCombatWeapon *weap, FireBulletData &data, C_BaseEntity *player, int hitbox)
 {
 	if (!weap)
 		return false;
@@ -417,7 +415,7 @@ bool autowall_2::SimulateFireBullet(C_BaseCombatWeapon *weap, FireBulletData &da
 	return false;
 }
 
-bool autowall_2::HandleBulletPenetration(WeaponInfo_t *wpn_data, FireBulletData &data)
+bool RageWall::HandleBulletPenetration(WeaponInfo_t *wpn_data, FireBulletData &data)
 {
 	bool bSolidSurf = ((data.enter_trace.contents >> 3) & CONTENTS_SOLID);
 	bool bLightSurf = (data.enter_trace.surface.flags >> 7) & SURF_LIGHT;
@@ -497,7 +495,7 @@ bool autowall_2::HandleBulletPenetration(WeaponInfo_t *wpn_data, FireBulletData 
 	return true;
 }
 
-bool autowall_2::TraceToExit(Vector &end, CGameTrace *enter_trace, Vector start, Vector dir, CGameTrace *exit_trace)
+bool RageWall::TraceToExit(Vector &end, CGameTrace *enter_trace, Vector start, Vector dir, CGameTrace *exit_trace)
 {
 	auto distance = 0.0f;
 	int first_contents = 0;
@@ -568,7 +566,7 @@ bool autowall_2::TraceToExit(Vector &end, CGameTrace *enter_trace, Vector start,
 	return false;
 }
 
-bool autowall_2::IsBreakableEntity(C_BaseEntity *ent)
+bool RageWall::IsBreakableEntity(C_BaseEntity *ent)
 {
 	typedef bool(__thiscall *isBreakbaleEntityFn)(C_BaseEntity*);
 	static isBreakbaleEntityFn IsBreakableEntityFn = (isBreakbaleEntityFn)Utils::FindSignature("client_panorama.dll", "55 8B EC 51 56 8B F1 85 F6 74 68");
@@ -601,7 +599,7 @@ bool autowall_2::IsBreakableEntity(C_BaseEntity *ent)
 		return false;
 }
 
-void autowall_2::ScaleDamage(int hitgroup, C_BaseEntity *player, float weapon_armor_ratio, float &current_damage)
+void RageWall::ScaleDamage(int hitgroup, C_BaseEntity *player, float weapon_armor_ratio, float &current_damage)
 {
 	bool heavArmor = player->hasHeavyArmor();
 	int armor = player->GetArmor();
@@ -659,7 +657,7 @@ void autowall_2::ScaleDamage(int hitgroup, C_BaseEntity *player, float weapon_ar
 	}
 }
 
-bool autowall_2::IsArmored(C_BaseEntity *player, int armorVal, int hitgroup)
+bool RageWall::IsArmored(C_BaseEntity *player, int armorVal, int hitgroup)
 {
 	bool res = false;
 
@@ -687,7 +685,7 @@ bool autowall_2::IsArmored(C_BaseEntity *player, int armorVal, int hitgroup)
 	return res;
 }
 
-void autowall_2::ClipTraceToPlayers(const Vector &vecAbsStart, const Vector &vecAbsEnd, unsigned int mask, ITraceFilter *filter, CGameTrace *tr)
+void RageWall::ClipTraceToPlayers(const Vector &vecAbsStart, const Vector &vecAbsEnd, unsigned int mask, ITraceFilter *filter, CGameTrace *tr)
 {
 	trace_t playerTrace;
 	Ray_t ray;
@@ -719,7 +717,7 @@ void autowall_2::ClipTraceToPlayers(const Vector &vecAbsStart, const Vector &vec
 	}
 }
 
-void autowall_2::TargetEntities(CUserCmd* pCmd)
+void RageWall::TargetEntities(CUserCmd* pCmd)
 {
 	auto weap = g::pActiveWeapon;
 	static C_BaseCombatWeapon *oldWeapon; // what is this for?
@@ -764,7 +762,7 @@ void autowall_2::TargetEntities(CUserCmd* pCmd)
 }
 
 int realHitboxSpot2[] = { 0, 1, 2, 3 };
-bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
+bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 {
 	int i = pEnt->EntIndex();
 	//auto firedShots = g::pLocalEntity->f;
@@ -827,8 +825,10 @@ bool autowall_2::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		{
 			if (g_Settings.bRagebotHitchance)
 			{
-				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA))
+				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA)) {
 					pCmd->buttons |= IN_ATTACK;
+					switchTick = 0;
+				}
 				else
 					AutoStop();
 			}
@@ -852,7 +852,7 @@ float RandomFloat(float min, float max)
 		return 0.f;
 }
 
-bool autowall_2::HitChance(QAngle angles, C_BaseEntity *ent, float chance)
+bool RageWall::HitChance(QAngle angles, C_BaseEntity *ent, float chance)
 {
 	auto weapon = g::pActiveWeapon;
 
@@ -921,7 +921,7 @@ bool autowall_2::HitChance(QAngle angles, C_BaseEntity *ent, float chance)
 	return false;
 }
 
-bool autowall_2::CheckTarget(int i)
+bool RageWall::CheckTarget(int i)
 {
 	C_BaseEntity *player = g_pEntityList->GetClientEntity(i);
 
@@ -949,7 +949,7 @@ bool autowall_2::CheckTarget(int i)
 	return true;
 }
 
-Vector autowall_2::CalculateBestPoint(C_BaseEntity *player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[])
+Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[])
 {
 	studiohdr_t *studioHdr = g_pMdlInfo->GetStudiomodel2(player->GetModel());
 	mstudiohitboxset_t *set = studioHdr->GetHitboxSet(0);
@@ -1006,21 +1006,30 @@ Vector autowall_2::CalculateBestPoint(C_BaseEntity *player, int prioritized, flo
 	}
 }
 
-void autowall_2::AutoStop()
+void RageWall::AutoStop()
 {
 	if (!g_Settings.bRagebotAutostop)
 		return;
 
-	if (g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3))
+	if (g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3) && switchTick < 8)
 	{
 		g::pCmd->buttons |= IN_WALK;
 		g::pCmd->forwardmove = -g::pCmd->forwardmove;
 		g::pCmd->sidemove = -g::pCmd->sidemove;
 		g::pCmd->upmove = 0;
+
+		switchTick++;
 	}
-	else
+	else if (switchTick >= 8 && switchTick < 20)
 	{
 		g::pCmd->forwardmove = 0;
 		g::pCmd->sidemove = 0;
+
+		switchTick++;
 	}
+	else
+	{
+		switchTick = 0;
+	}
+
 }

@@ -20,6 +20,8 @@ namespace vtable_indexes
 	constexpr auto sceneend		= 9;
 	constexpr auto drawmodelexecute = 21;
 	constexpr auto framestagenotify = 37;
+	constexpr auto overrideView = 18;
+	constexpr auto getboolsvcheats = 13;
 }
 
 class VMTHook;
@@ -40,8 +42,11 @@ public:
     static HRESULT  __stdcall   Present   (IDirect3DDevice9* pDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion);
     static LRESULT  __stdcall   WndProc   (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void		__fastcall	SceneEnd  (void *pEcx, void *pEdx);
+	static void		__stdcall	OverrideView(CViewSetup * pSetup);
 	static void		__stdcall	DrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld);
-	static void		__stdcall	FrameStageNotify_h(ClientFrameStage_t stage);
+	static void		__stdcall	FrameStageNotify(ClientFrameStage_t stage);
+	static bool		__fastcall	GetBool_SVCheats_h(PVOID pConVar, int edx);
+
 private:
     /*---------------------------------------------*/
     /*-------------VMT Hook pointers---------------*/
@@ -52,18 +57,21 @@ private:
     std::unique_ptr<VMTHook> pSurfaceHook;
 	std::unique_ptr<VMTHook> pRenderViewHook;
 	std::unique_ptr<VMTHook> pModelRenderHook;
-	//std::unique_ptr<VMTHook> pFrameStageNotifyHook;
+	std::unique_ptr<VMTHook> pConvarHook;
 
     /*---------------------------------------------*/
     /*-------------Hook prototypes-----------------*/
     /*---------------------------------------------*/
 
-    typedef bool (__fastcall* CreateMove_t) (IClientMode*, void*, float, CUserCmd*);
-    typedef void (__fastcall* LockCursor_t) (ISurface*, void*);
-    typedef long (__stdcall*  Reset_t)      (IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
-    typedef long (__stdcall*  Present_t)    (IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
-	typedef void (__thiscall *SceneEnd_t)	(void *pEcx);
-	typedef void (__stdcall *FrameStageNotify_t)(ClientFrameStage_t);
+    typedef bool (__fastcall*	CreateMove_t)		(IClientMode*, void*, float, CUserCmd*);
+    typedef void (__fastcall*	LockCursor_t)		(ISurface*, void*);
+    typedef long (__stdcall*	Reset_t)			(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
+    typedef long (__stdcall*	Present_t)			(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
+	typedef void (__thiscall*	SceneEnd_t)			(void *pEcx);
+	typedef void (__stdcall*	FrameStageNotify_t)	(ClientFrameStage_t);
+	typedef void (__stdcall*	OverrideView_t)		(CViewSetup*);
+	typedef bool (__fastcall*   GetBool_t)			(void*);
+
 	using DrawModelExecute_t = void(__thiscall*)(IVModelRender*, IMatRenderContext*, const DrawModelState_t&, const ModelRenderInfo_t&, matrix3x4_t*);
 
 private:

@@ -9,7 +9,7 @@
 #define CAM_HULL_OFFSET		6.0  // the size of the bounding hull used for collision checking
 #define START_TRANS_DIST	40.0 // how close to player when it starts making model translucent
 #define TRANS_DELTA	        1.9921875 // Set to 255 / START_TRANS_DIST
-#define DIST				30
+#define DIST				150.0
 
 static Vector CAM_HULL_MIN(-CAM_HULL_OFFSET, -CAM_HULL_OFFSET, -CAM_HULL_OFFSET);
 static Vector CAM_HULL_MAX(CAM_HULL_OFFSET, CAM_HULL_OFFSET, CAM_HULL_OFFSET);
@@ -92,43 +92,42 @@ void Misc::FixMovement(CUserCmd *usercmd, QAngle &wish_angle)
 void Misc::doMisc() 
 {
 	if (g_Settings.bBhopEnabled)
-		DoBhop();
+		this->DoBhop();
 
-	if (g_Settings.bMiscThirdPerson)
-		DoThirdPerson();
 }
 
 void Misc::DoThirdPerson() {
-	if (g_Settings.bMiscThirdPerson)
+	if (g_pEngine->IsInGame())
 	{
-		//Utils::Log(g_pInput->m_fCameraInThirdPerson);
+		Utils::Log(g_pInput->m_fCameraInThirdPerson);
 		static QAngle vecAngles;
 		g_pEngine->GetViewAngles(vecAngles);
-		if (g::pLocalEntity->IsAlive())
+		if (g::pLocalEntity->IsAlive() && g_Settings.bMiscThirdPerson)
 		{
 			if (!g_pInput->m_fCameraInThirdPerson)
 			{
 				g_pInput->m_fCameraInThirdPerson = true;
-				g_pInput->m_vecCameraOffset = Vector(vecAngles.x, vecAngles.y, DIST);
-				PositionCamera(g::pLocalEntity, vecAngles);
+				g_pInput->m_vecCameraOffset = Vector(vecAngles.x, vecAngles.y, 150.f);
 			}
+			PositionCamera(g::pLocalEntity, vecAngles);
+			g::pThirdperson = true;
 		}
 		else
 		{
 			g_pInput->m_fCameraInThirdPerson = false;
-			g_pInput->m_vecCameraOffset = Vector(vecAngles.x, vecAngles.y, 0); 
+			g_pInput->m_vecCameraOffset = Vector(vecAngles.x, vecAngles.y, 0);
+			g::pThirdperson = false;
 		}
 	}
 }
 
 
 void Misc::PositionCamera(C_BaseEntity* pPlayer, QAngle angles)
-{ // this is just a modified PositionCamera from the source sdk with stuff we dont need removed & simplified :)
+{
+
 	if (pPlayer) {
-		// get player position
 		Vector origin = pPlayer->GetOrigin() + pPlayer->GetViewOffset();
 
-		// setup our vectors
 		Vector camForward, camRight, camUp;
 		Misc::AngleVectors(angles, camForward, camRight, camUp);
 		Vector endPos = origin;
@@ -137,19 +136,15 @@ void Misc::PositionCamera(C_BaseEntity* pPlayer, QAngle angles)
 			+ (camRight * GetDesiredCameraOffset()[1])
 			+ (camUp * GetDesiredCameraOffset()[2]);
 
-		// filter out player (duh)
 		CTraceFilter traceFilter;
 		traceFilter.pSkip = pPlayer;
 
 		trace_t trace;
 
-		// use UTIL_TraceHull... this is VERY unnecessary, yet makes things slightly easier
 		UTIL_TraceHull(endPos, vecCamOffset, CAM_HULL_MIN, CAM_HULL_MAX, MASK_SOLID & ~CONTENTS_MONSTER, &traceFilter, &trace);
 
-		// if we hit something...
 		if (trace.fraction < 1.0) {
-			// move the camera forward
-			g_pInput->m_vecCameraOffset[DIST] *= trace.fraction;
+			g_pInput->m_vecCameraOffset[2] *= trace.fraction;
 		}
 	}
 }

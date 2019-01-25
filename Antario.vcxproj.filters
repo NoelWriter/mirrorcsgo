@@ -224,9 +224,6 @@
     <ClInclude Include="Mirror\Features\Chams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Autowall.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mirror\SDK\IPhysics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -240,6 +237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mirror\Features\AntiAim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Features\Autowall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

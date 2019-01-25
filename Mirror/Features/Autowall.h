@@ -16,7 +16,7 @@ struct FireBulletData
 	int penetrate_count;
 };
 
-class autowall_2
+class RageWall
 {
 public:
 	float BestHitPoint(C_BaseEntity * player, int prioritized, float minDmg, mstudiohitboxset_t * hitset, matrix3x4_t matrix[], Vector & vecOut);
@@ -52,6 +52,6 @@ public:
 	void AutoStop();
 
 	int prev_aimtarget = NULL;
-
+	int switchTick = 0;
 };
-extern autowall_2 new_autowall;
+extern RageWall g_RageWall;

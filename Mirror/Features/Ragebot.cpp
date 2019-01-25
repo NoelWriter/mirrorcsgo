@@ -140,7 +140,7 @@ bool Ragebot::CanHitTarget(C_BaseEntity* pTarget)
 	for (const int &hitbox : hitboxes)
 	{
 		Vector pTargetPos = pTarget->GetBonePos(hitbox);
-		if (false)//new_autowall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity())))
+		if (false)//g_RageWall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity())))
 			return true;
 	}
 	return false;
@@ -218,7 +218,7 @@ bool Ragebot::Hitscan(C_BaseEntity* pTarget, Vector& hitboxPos)
 	for (const int &hitbox : hitboxes)
 	{
 		Vector pTargetPos = pTarget->GetBonePos(hitbox);
-		ActualDamage = 0;//new_autowall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity()));
+		ActualDamage = 0;//g_RageWall.CanHit(NewExtrapolate(pTargetPos, pTarget->GetVelocity()));
 		if (ActualDamage > pTarget->GetHealth())
 		{
 			hitboxPos = pTargetPos;

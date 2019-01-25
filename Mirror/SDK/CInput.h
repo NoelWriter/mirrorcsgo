@@ -40,72 +40,76 @@
 #define IN_GRENADE2      (1 << 24) // grenade 2
 #define IN_ATTACK3       (1 << 25)
 
-class bf_read;
-class bf_write;
 
-typedef unsigned long CRC32_t;
 
 class CUserCmd
 {
 public:
-    virtual ~CUserCmd() {};
+	virtual ~CUserCmd() {};
 
-    int       command_number;     // For matching server and client commands for debugging
-    int       tick_count;         // The tick the client created this command
-    QAngle    viewangles;         // Player instantaneous view angles.
-    Vector    aimdirection;       // 
-    float     forwardmove;        // Forward velocity
-    float     sidemove;           // Sideways velocity
-    float     upmove;             // Upward velocity
-    int       buttons;            // Attack button states
-    byte      impulse;            // Impulse command issued.
-    int       weaponselect;       // Current weapon id
-    int       weaponsubtype;      // 
-    int       random_seed;        // For shared random functions
-    short     mousedx;            // Mouse accum in x from create move
-    short     mousedy;            // Mouse accum in y from create move
-    bool      hasbeenpredicted;   // Client only, tracks whether we've predicted this command at least once
-    char      pad_0x4C[0x18];     
+	int       command_number;     // For matching server and client commands for debugging
+	int       tick_count;         // The tick the client created this command
+	QAngle    viewangles;         // Player instantaneous view angles.
+	Vector    aimdirection;       // 
+	float     forwardmove;        // Forward velocity
+	float     sidemove;           // Sideways velocity
+	float     upmove;             // Upward velocity
+	int       buttons;            // Attack button states
+	byte      impulse;            // Impulse command issued.
+	int       weaponselect;       // Current weapon id
+	int       weaponsubtype;      // 
+	int       random_seed;        // For shared random functions
+	short     mousedx;            // Mouse accum in x from create move
+	short     mousedy;            // Mouse accum in y from create move
+	bool      hasbeenpredicted;   // Client only, tracks whether we've predicted this command at least once
+	char      pad_0x4C[0x18];
 
 };
 
-class CVerifiedUserCmd
-{
-public:
-    CUserCmd  m_cmd;
-    CRC32_t   m_crc;
-};
+class bf_read;
+class bf_write;
+
+typedef unsigned long CRC32_t;
 
 #define MULTIPLAYER_BACKUP 150
 
 class CInput
 {
 public:
-	char                pad_0x00[0x0C];
-	bool                m_trackir_available;
-	bool                m_mouse_initiated;
-	bool                m_mouse_active;
-	bool                m_fJoystickAdvancedInit;
-	char                pad_0x08[0x2C];
-	void*               m_pKeys;
-	char                pad_0x38[0x6C];
-	bool                m_fCameraInterceptingMouse;
-	bool                m_fCameraInThirdPerson;
-	bool                m_fCameraMovingWithMouse;
-	Vector		    m_vecCameraOffset;
-	bool                m_fCameraDistanceMove;
-	int                 m_nCameraOldX;
-	int                 m_nCameraOldY;
-	int                 m_nCameraX;
-	int                 m_nCameraY;
-	bool                m_CameraIsOrthographic;
-	Vector              m_angPreviousViewAngles;
-	Vector              m_angPreviousViewAnglesTilt;
-	float               m_flLastForwardMove;
-	int                 m_nClearInputState;
-	char                pad_0xE4[0x8];
-	CUserCmd*           m_pCommands;
-	CVerifiedUserCmd*   m_pVerifiedCommands;
+	void* vtable;
+	char pad[0x8];
+	bool m_fTrackIRAvailable;
+	bool m_fMouseInitialized;
+	bool m_fMouseActive;
+	bool m_fJoystickAdvancedInit;
+	char pad_0x08[0x2C];
+	void* m_pKeys;
+	char pad_0x38[0x6C];
+	bool m_fCameraInterceptingMouse;
+	bool m_fCameraInThirdPerson;
+	bool m_fCameraMovingWithMouse;
+	Vector m_vecCameraOffset;
+	bool m_fCameraDistanceMove;
+	int m_nCameraOldX;
+	int m_nCameraOldY;
+	int m_nCameraX;
+	int m_nCameraY;
+	bool m_CameraIsOrthographic;
+	Vector m_angPreviousViewAngles;
+	Vector m_angPreviousViewAnglesTilt;
+	float m_flLastForwardMove;
+	int m_nClearInputState;
+	CUserCmd* m_pCommands;
+	CUserCmd* m_pVerifiedCommands;
+
+	inline CUserCmd& get_user_cmd(int sequence_number) const
+	{
+		return m_pCommands[sequence_number % MULTIPLAYER_BACKUP];
+	}
+	inline CUserCmd& get_verified_user_cmd(int sequence_number) const
+	{
+		return m_pVerifiedCommands[sequence_number % MULTIPLAYER_BACKUP];
+	}
 };
 
 enum

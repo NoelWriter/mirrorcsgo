@@ -68,6 +68,7 @@ void MenuMain::Initialize()
 				sectPlayer->AddCheckBox("Names", &g_Settings.bEspPName);
 				sectPlayer->AddCheckBox("Bones", &g_Settings.bEspPBones);
 				sectPlayer->AddCheckBox("Chams", &g_Settings.bEspPChams);
+				sectPlayer->AddCheckBox("Chams Invisible", &g_Settings.bEspPChamsInvisible);
 				sectPlayer->AddCheckBox("Health", &g_Settings.bEspPHealth);
 			}
 			auto sectWorld = tab3->AddSection("World", 1.f);
