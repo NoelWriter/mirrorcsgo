@@ -106,6 +106,29 @@ void BackTrack::RageBackTrack(CUserCmd* cmd, C_BaseEntity* pEnt)
 	if (!g_Settings.bRagebotBacktrack)
 		return;
 
+	C_BaseEntity* pLocal = g::pLocalEntity;
+	if (!pLocal->IsAlive())
+		return;
+
+	for (int i = 0; i < g_pEngine->GetMaxClients(); i++)
+	{
+		auto entity = g_pEntityList->GetClientEntity(i);
+
+		if (!entity || !pLocal)
+			continue;
+
+		if (entity == pLocal)
+			continue;
+
+		if (entity->GetTeam() == pLocal->GetTeam())
+			continue;
+
+		if (!entity->IsAlive())
+			continue;
+
+		l_SavedTicks[i][]
+
+	}
 
 }
 

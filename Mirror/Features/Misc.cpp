@@ -31,6 +31,7 @@ void Misc::AngleVectors(const QAngle &angles, Vector& forward, Vector& right, Ve
 	forward.x = (cp * cy);
 	forward.y = (cp * sy);
 	forward.z = (-sp);
+	forward.z = (-sp);
 	right.x = (-1 * sr * sp * cy + -1 * cr * -sy);
 	right.y = (-1 * sr * sp * sy + -1 * cr *  cy);
 	right.z = (-1 * sr * cp);
@@ -115,7 +116,7 @@ void Misc::DoThirdPerson() {
 		else
 		{
 			g_pInput->m_fCameraInThirdPerson = false;
-			g_pInput->m_vecCameraOffset = Vector(vecAngles.x, vecAngles.y, 0);
+			//g_pInput->m_vecCameraOffset = Vector(vecAngles.x, vecAngles.y, 0);
 			g::pThirdperson = false;
 		}
 	}
