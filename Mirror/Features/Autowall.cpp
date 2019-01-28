@@ -1011,7 +1011,7 @@ void RageWall::AutoStop()
 	if (!g_Settings.bRagebotAutostop)
 		return;
 
-	if (g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3) && switchTick < 8)
+	if (g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3) && switchTick < 5)
 	{
 		g::pCmd->buttons |= IN_WALK;
 		g::pCmd->forwardmove = -g::pCmd->forwardmove;
@@ -1020,7 +1020,7 @@ void RageWall::AutoStop()
 
 		switchTick++;
 	}
-	else if (switchTick >= 8 && switchTick < 20)
+	else if (switchTick >= 5 && switchTick < 15 || g::pLocalEntity->GetVelocity().Length() < (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3))
 	{
 		g::pCmd->forwardmove = 0;
 		g::pCmd->sidemove = 0;

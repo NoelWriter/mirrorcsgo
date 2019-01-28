@@ -14,6 +14,7 @@ private:
     void RenderName(C_BaseEntity* pEnt, int iterator);
     void RenderWeaponName(C_BaseEntity* pEnt);
 	void DrawBoneESP(C_BaseEntity * pBaseEntity, int it);
+	void DrawGrenadeHelper();
 	void DrawHealth(C_BaseEntity * pEnt);
 
     int localTeam{};

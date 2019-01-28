@@ -125,6 +125,9 @@ struct Color
     static constexpr Color Red(int   a = 255) { return { 255, 0, 0, a }; }
     static constexpr Color Green(int a = 255) { return { 0, 255, 0, a }; }
     static constexpr Color Blue(int  a = 255) { return { 0, 0, 255, a }; }
+	static constexpr Color Purple(int  a = 255) { return { 255, 30, 255, a }; }
+	static constexpr Color Orange(int  a = 255) { return { 250, 165, 110, a }; }
+
 
 private:
     constexpr void  swap(float& a, float& b) { float tmp = a; a = b; b = tmp; }

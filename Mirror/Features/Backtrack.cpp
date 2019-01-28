@@ -126,7 +126,7 @@ void BackTrack::RageBackTrack(CUserCmd* cmd, C_BaseEntity* pEnt)
 		if (!entity->IsAlive())
 			continue;
 
-		l_SavedTicks[i][]
+		
 
 	}
 

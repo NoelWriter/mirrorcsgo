@@ -32,14 +32,10 @@ namespace ui
 
     struct MenuStyle
     {
-        int   iPaddingX       = 20;                     /*- Padding between sections                            -*/
-        int   iPaddingY       = 6;                      /*- Padding between selectables                         -*/
-<<<<<<< HEAD:Mirror/GUI/GUI.h
-        Color colCursor       = { 0, 0, 0, 0 };   /*- Color of the mouse cursor                           -*/
-=======
+        int   iPaddingX       = 15;                     /*- Padding between sections                            -*/
+        int   iPaddingY       = 3;                      /*- Padding between selectables                         -*/
         int   iMinThumbSize   = 10;
-        Color colCursor       = { 0, 150, 255, 100 };   /*- Color of the mouse cursor                           -*/
->>>>>>> fb7abae... Fixes for scrollbar - properly scales now:Antario/GUI/GUI.h
+        Color colCursor       = { 0, 0, 0, 0 };   /*- Color of the mouse cursor                           -*/
         Color colHover        = { 100, 100, 100, 30 };  /*- Color applied on the obj when mouse hovers above it -*/
         Color colSectionOutl  = { 15, 15, 15, 200 };    /*- Color of the section outline                        -*/
         Color colSectionFill  = { 0, 0, 0, 30 };        /*- Color filling the section bounds                    -*/
@@ -282,7 +278,7 @@ namespace ui
         void SetupChildPositions()      override;
         int GetScrollableHeight() const override { return iTotalPixelHeight - this->rcBoundingBox.Height(); }
 
-        virtual void AddDummy();
+        virtual void AddDummy(int iHeight);
         virtual void AddCheckBox(const std::string& strSelectableLabel, bool * bValue);
         virtual void AddButton(const std::string& strSelectableLabel, void(&fnPointer)(), SPoint ptButtonSize = SPoint(0, 0));
         virtual void AddCombo(const std::string& strSelectableLabel, int* iVecIndex, std::vector<std::string> vecBoxOptions);

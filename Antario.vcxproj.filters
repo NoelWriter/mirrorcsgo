@@ -69,13 +69,13 @@
     <ClCompile Include="Mirror\Features\Autowall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Ragebot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Mirror\Features\Misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mirror\Features\AntiAim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mirror\Features\DamageIndicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -230,9 +230,6 @@
     <ClInclude Include="Mirror\Utils\ICvar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Ragebot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mirror\SDK\IEngineTrace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -240,6 +237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mirror\Features\Autowall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Features\DamageIndicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

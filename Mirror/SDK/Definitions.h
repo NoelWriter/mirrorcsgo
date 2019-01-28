@@ -401,6 +401,7 @@ enum ItemDefinitionIndex : short
 	GLOVE_HYDRA = 5035,
 	MAX_ITEMDEFINITIONINDEX
 };
+
 enum class CSWeaponType : int
 {
     WEAPONTYPE_KNIFE = 0,

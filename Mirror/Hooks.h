@@ -58,6 +58,7 @@ private:
 	std::unique_ptr<VMTHook> pRenderViewHook;
 	std::unique_ptr<VMTHook> pModelRenderHook;
 	std::unique_ptr<VMTHook> pConvarHook;
+	std::unique_ptr<VMTHook> pClientHook;
 
     /*---------------------------------------------*/
     /*-------------Hook prototypes-----------------*/

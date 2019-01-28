@@ -13,3 +13,4 @@
 #include "Chams.h"
 #include "Autowall.h"
 #include "AntiAim.h"
+#include "DamageIndicator.h"

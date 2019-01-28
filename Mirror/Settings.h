@@ -41,6 +41,8 @@ public:
 	bool  bEspPChams			= false;
 	bool  bEspPChamsInvisible	= false;
 	bool  bEspPHealth			= false;
+	bool  bEspPDamageIndicator	= false;
+	bool  bEspPHitsound			= false;
 
 	bool  bEspWRadar			= false;
 	bool  bEspWGrenade			= false;

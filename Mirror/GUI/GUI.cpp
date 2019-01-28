@@ -140,9 +140,9 @@ bool MenuMain::MsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return false;
 }
 
-void Section::AddDummy()
+void Section::AddDummy(int iHeight)
 {
-    this->AddChild(std::make_shared<DummySpace>(SPoint(this->GetMaxChildWidth(), pFont->iHeight + style.iPaddingY)));
+    this->AddChild(std::make_shared<DummySpace>(SPoint(this->GetMaxChildWidth(), iHeight)));
 }
 
 void Section::AddCheckBox(const std::string& strSelectableLabel, bool* bValue)
@@ -347,14 +347,6 @@ std::shared_ptr<Section> Tab::AddSection(const std::string& strLabel, float flPe
 
 ScrollBar::ScrollBar(ObjectPtr pParentObject)
 {
-<<<<<<< HEAD:Mirror/GUI/GUI.cpp
-	this->pParent = pParentObject;
-	this->szSizeObject.x = 8;
-	this->iPageSize = 0;
-	this->iScrollAmmount = 0;
-	this->eState = CLEAR;
-	this->bIsVisible = true;/* For initials checks */
-=======
     this->pParent   = pParentObject;
     this->iPageSize = 0;
     this->szSizeObject.x = 8;
@@ -363,7 +355,6 @@ ScrollBar::ScrollBar(ObjectPtr pParentObject)
     this->bIsThumbUsed   = false;
 
     this->eHoveredButton = HoveredButton::NONE;
->>>>>>> fb7abae... Fixes for scrollbar - properly scales now:Antario/GUI/GUI.cpp
 }
 
 

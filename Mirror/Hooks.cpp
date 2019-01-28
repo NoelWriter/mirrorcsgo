@@ -35,6 +35,7 @@ void Hooks::Init()
 
     // VMTHooks
     g_Hooks.pD3DDevice9Hook			= std::make_unique<VMTHook>(reinterpret_cast<void*>(d3dDevice));
+	g_Hooks.pClientHook				= std::make_unique<VMTHook>(g_pClientDll);
     g_Hooks.pClientModeHook			= std::make_unique<VMTHook>(g_pClientMode);
     g_Hooks.pSurfaceHook			= std::make_unique<VMTHook>(g_pSurface);
 	g_Hooks.pRenderViewHook			= std::make_unique<VMTHook>(g_RenderView);
@@ -48,13 +49,12 @@ void Hooks::Init()
     g_Hooks.pSurfaceHook			->Hook(vtable_indexes::lockCursor,			Hooks::LockCursor);
 	g_Hooks.pRenderViewHook			->Hook(vtable_indexes::sceneend,			Hooks::SceneEnd);
 	g_Hooks.pModelRenderHook		->Hook(vtable_indexes::drawmodelexecute,	Hooks::DrawModelExecute);
-	g_Hooks.pClientModeHook			->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify);
-	g_Hooks.pClientModeHook			->Hook(vtable_indexes::overrideView,		Hooks::OverrideView); 
+	//g_Hooks.pClientHook				->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify);
+	//g_Hooks.pClientModeHook			->Hook(vtable_indexes::overrideView,		Hooks::OverrideView); 
 	g_Hooks.pConvarHook				->Hook(vtable_indexes::getboolsvcheats,		Hooks::GetBool_SVCheats_h);
 
-    // Create event listener, no need for it now so it will remain commented.
-    //const std::vector<const char*> vecEventNames = { "" };
-    //g_Hooks.pEventListener = std::make_unique<EventListener>(vecEventNames);
+    const std::vector<const char*> vecEventNames = { "player_hurt" };
+    g_Hooks.pEventListener = std::make_unique<EventListener>(vecEventNames);
 
     Utils::Log("Hooking completed!");
 }
@@ -110,7 +110,8 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	g_Misc.doMisc();
 
 	QAngle wish_angle = pCmd->viewangles;
-	
+
+	g_Misc.DoThirdPerson();
 
     // run shit outside enginepred
     engine_prediction::RunEnginePred();
@@ -121,7 +122,6 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 		g_Misc.FixMovement(pCmd, wish_angle);
 	}
     engine_prediction::EndEnginePred();
-
 
 	g::pVisualAngles = pCmd->viewangles;
 
@@ -146,10 +146,14 @@ void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 
 	if (Stage == ClientFrameStage_t::FRAME_RENDER_START)
 	{
+
+		if (g_Settings.bMiscThirdPerson)
+			g_Misc.DoThirdPerson();
+
 		if (g::pLocalEntity->IsAlive())
 		{
-			if (g_pInput->m_fCameraInThirdPerson)
-				g::pLocalEntity->GetVAngles() = g::pVisualAngles;
+			//if (g::pThirdperson)
+				//g::pLocalEntity->GetVAngles() = g::pVisualAngles;
 		}
 	}
 
@@ -215,6 +219,9 @@ HRESULT __stdcall Hooks::Present(IDirect3DDevice9* pDevice, const RECT* pSourceR
 			// Put your draw calls here
             g_ESP.Render();
 
+			if (g_Settings.bEspPDamageIndicator)
+				g_pDamageIndicator.paint();
+
             if (g_Settings.bMenuOpened)
             {
                 g_Hooks.nMenu.Render();             // Render our menu
@@ -228,7 +235,7 @@ HRESULT __stdcall Hooks::Present(IDirect3DDevice9* pDevice, const RECT* pSourceR
     stateBlock->Release();
     pDevice   ->SetVertexDeclaration(vertDec);
 
-    static auto oPresent = g_Hooks.pD3DDevice9Hook->GetOriginal<Present_t>(vtable_indexes::present);
+    static auto oPresent = g_Hooks.pD3DDevice9Hook->GetOriginal<Present_t>(17);
     return oPresent(pDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
 
@@ -299,7 +306,11 @@ void __stdcall Hooks::OverrideView(CViewSetup* pSetup)
 	{
 		if (g::pLocalEntity)
 		{
-			g_Misc.DoThirdPerson();
+			QAngle viewangle;
+			g_pEngine->GetViewAngles(viewangle);
+			g_pInput->m_fCameraInThirdPerson = true;
+			g_pInput->m_vecCameraOffset = Vector(viewangle.x, viewangle.y, 150.f);
+			//g_Misc.DoThirdPerson();
 		}
 	}
 

@@ -58,6 +58,15 @@ void ESP::RenderBox(C_BaseEntity* pEnt)
 	g_Render.Line(sx + w - 1, sy + h, sx + w - 1, sy + h * 0.75, Color::Black());
 }
 
+int StringToWeapon(std::string weapon) {
+	if (!strcmp(weapon.c_str(), "smokegrenade"))
+		return 45;
+	if (!strcmp(weapon.c_str(), "flashbang"))
+		return 43;
+	if (!strcmp(weapon.c_str(), "incgrenade"))
+		return 46;
+}
+
 void ESP::Radar(C_BaseEntity* pEnt)
 {
 	if (!pEnt->IsAlive() && pEnt->IsDormant() && !pEnt)
@@ -144,6 +153,57 @@ void ESP::DrawBoneESP(C_BaseEntity* pBaseEntity, int it)
 
 }
 
+void ESP::DrawGrenadeHelper() {
+	C_BaseEntity* local = g::pLocalEntity;
+	for (int i = 0; i < cGrenade.GrenadeInfo.size(); i++)
+	{
+		GrenadeInfo_t info;
+		if (!cGrenade.GetInfo(i, &info))
+			continue;
+
+		int iGrenadeID = StringToWeapon(info.szWeapon);
+
+		auto weapon = local->GetActiveWeapon();
+		if (!weapon)
+			continue;
+
+		if (!weapon->isGrenade())
+			continue;
+
+		Vector vecOnScreenOrigin, vecOnScreenAngles;
+		int iCenterY, iCenterX;
+		g_pEngine->GetScreenSize(iCenterY, iCenterX);
+		iCenterX /= 2;
+		iCenterY /= 2;
+
+		float dist = sqrt(pow(local->GetRenderOrigin().x - info.vecOrigin.x, 2) + pow(local->GetRenderOrigin().y - info.vecOrigin.y, 2) + pow(local->GetRenderOrigin().z - info.vecOrigin.z, 2)) * 0.0254f;
+
+		if (dist < 0.5f)
+		{
+			if (Utils::WorldToScreen(info.vecOrigin, vecOnScreenOrigin))
+				g_Render.DrawWave1(info.vecOrigin, 7, Color::Orange());
+
+			Vector vecAngles;
+			Utils::AngleVectors(info.vecViewangles, vecAngles);
+			vecAngles *= 100;
+
+			if (Utils::WorldToScreen((local->GetEyePosition() + vecAngles), vecAngles))
+				g_Render.RectFilled(vecAngles.x - 5, vecAngles.y - 5, vecAngles.x + 5, vecAngles.y + 5, Color::Green());
+
+			g_Render.String(iCenterX, iCenterY + 30, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW, Color::White(), g_Fonts.pFontTahoma10.get(), info.szName.c_str());
+			g_Render.String(iCenterX, iCenterY, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW, Color::White(), g_Fonts.pFontTahoma10.get(), info.szDescription.c_str());
+
+		}
+		else
+		{
+			if (Utils::WorldToScreen(info.vecOrigin, vecOnScreenOrigin));
+
+			g_Render.DrawWave1(info.vecOrigin, 10, Color::Orange());
+			g_Render.DrawWave1(info.vecOrigin, 7, Color::Orange());
+		}
+	}
+}
+
 void ESP::DrawHealth(C_BaseEntity* pEnt)
 {
 	int pHealth = pEnt->GetHealth() > 100 ? 100 : pEnt->GetHealth();
@@ -171,69 +231,13 @@ void ESP::DrawHealth(C_BaseEntity* pEnt)
 		g_Fonts.pFontTahoma10.get(), std::to_string(pHealth).c_str());
 }
 
-int StringToWeapon(std::string weapon) {
-	if (!strcmp(weapon.c_str(), "smokegrenade"))
-		return 45;
-	if (!strcmp(weapon.c_str(), "flashbang"))
-		return 43;
-	if (!strcmp(weapon.c_str(), "incgrenade"))
-		return 46;
-}
-
 void ESP::Render()
 {
 
 	// Grenade Helper
 	if (g_Settings.bEspWGrenade && g_pEngine->IsConnected())
 	{
-		C_BaseEntity* local = g::pLocalEntity;
-		for (int i = 0; i < cGrenade.GrenadeInfo.size(); i++)
-		{
-			GrenadeInfo_t info;
-			if (!cGrenade.GetInfo(i, &info))
-				continue;
-
-			int iGrenadeID = StringToWeapon(info.szWeapon);
-
-			auto weapon = local->GetActiveWeapon();
-			if (!weapon)
-				continue;
-
-			if (!weapon->isGrenade())
-				continue;
-
-			Vector vecOnScreenOrigin, vecOnScreenAngles;
-			int iCenterY, iCenterX;
-			g_pEngine->GetScreenSize(iCenterY, iCenterX);
-			iCenterX /= 2;
-			iCenterY /= 2;
-
-			float dist = sqrt(pow(local->GetRenderOrigin().x - info.vecOrigin.x, 2) + pow(local->GetRenderOrigin().y - info.vecOrigin.y, 2) + pow(local->GetRenderOrigin().z - info.vecOrigin.z, 2)) * 0.0254f;
-
-			if (dist < 0.5f)
-			{
-				if (Utils::WorldToScreen(info.vecOrigin, vecOnScreenOrigin))
-					g_Render.DrawWave1(info.vecOrigin, 7, Color::Red());
-
-				Vector vecAngles;
-				Utils::AngleVectors(info.vecViewangles, vecAngles);
-				vecAngles *= 100;
-
-				if (Utils::WorldToScreen((local->GetEyePosition() + vecAngles), vecAngles))
-					g_Render.RectFilled(vecAngles.x - 5, vecAngles.y - 5, vecAngles.x + 5, vecAngles.y + 5, Color::Green());
-
-				g_Render.String(iCenterX, iCenterY + 30, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW, Color::White(), g_Fonts.pFontTahoma10.get(), info.szName.c_str());
-				g_Render.String(iCenterX, iCenterY, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW, Color::White(), g_Fonts.pFontTahoma10.get(), info.szDescription.c_str());
-
-			}
-			else
-			{
-				if (Utils::WorldToScreen(info.vecOrigin, vecOnScreenOrigin));
-
-				g_Render.DrawWave1(info.vecOrigin, 10, Color::Red());
-				g_Render.DrawWave1(info.vecOrigin, 7, Color::Red());
-			}
-		}
+		this->DrawGrenadeHelper();
 	}
 	else
 	{
@@ -264,7 +268,6 @@ void ESP::Render()
 
 		if (!g_Settings.bEspPTeam && pPlayerEntity->GetTeam() == localTeam)
 			continue;
-
 
         if (g_Settings.bEspPBoxes)
             this->RenderBox(pPlayerEntity);
