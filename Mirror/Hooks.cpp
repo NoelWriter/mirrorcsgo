@@ -224,6 +224,7 @@ HRESULT __stdcall Hooks::Present(IDirect3DDevice9* pDevice, const RECT* pSourceR
 
             if (g_Settings.bMenuOpened)
             {
+				g_Misc.HandleColors();
                 g_Hooks.nMenu.Render();             // Render our menu
                 g_Hooks.nMenu.mouseCursor->Render();// Render mouse cursor in the end so its not overlapped
             }
@@ -238,9 +239,6 @@ HRESULT __stdcall Hooks::Present(IDirect3DDevice9* pDevice, const RECT* pSourceR
     static auto oPresent = g_Hooks.pD3DDevice9Hook->GetOriginal<Present_t>(17);
     return oPresent(pDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
-
-float colorHidden[3] = { 0.9f, 0.7f, 0.4f };
-float colorVisible[3] = {  0.8f, 0.9f, 0.35f };
 
 void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 {
@@ -257,6 +255,9 @@ void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 	static IMaterial* znorm = CreateMaterial(true, true, false);
 	static IMaterial* zflatnorm = CreateMaterial(true, false, false);
 	static IMaterial* zwirenorm = CreateMaterial(true, true, true);
+
+	float colorHidden[3] = { g_Misc.cChamsXQZ.red / 255.f, g_Misc.cChamsXQZ.green / 255.f, g_Misc.cChamsXQZ.blue / 255.f };
+	float colorVisible[3] = { g_Misc.cChams.red / 255.f, g_Misc.cChams.green / 255.f, g_Misc.cChams.blue / 255.f };
 
 	if (g_Settings.bEspPChams && g::pLocalEntity && g_pEngine->IsConnected() && g_pEngine->IsInGame())
 	{

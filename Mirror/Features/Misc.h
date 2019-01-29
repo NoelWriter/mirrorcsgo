@@ -15,6 +15,12 @@ public:
 
 	void DoThirdPerson();
 
+	void CrouchExploit();
+
+	void HandleColors();
+
+	Color GetColor(int colorSelected);
+
 	void PositionCamera(C_BaseEntity * pPlayer, QAngle angles);
 
 	static void UTIL_TraceHull(Vector & vecAbsStart, Vector & vecAbsEnd, Vector & hullMin, Vector & hullMax, unsigned int mask, ITraceFilter * pFilter, trace_t * ptr);
@@ -23,6 +29,16 @@ public:
 
 	template<class T, class U>
 	T clamp(T in, U low, U high);
+
+	Color cMenu = { 250, 45, 110, 255 };
+	Color cBox = { 0, 0, 0, 255 };
+	Color cBone = { 255, 255, 255, 255 };
+	Color cDIndicator = { 250, 165, 110, 255 };
+	Color cChams = { 250, 45, 110, 255 };
+	Color cChamsXQZ = { 0, 0, 0, 255 };
+	Color cEnemy = { 250, 165, 110, 255 };
+	Color cTeam = { 195, 240, 100, 255 };
+
 private:
 
     void DoBhop() const
@@ -54,6 +70,25 @@ private:
         else
             bShouldFake = bLastJumped = false;
     }
+
+	enum colorSelected
+	{
+		COLORS_MENU,
+		COLORS_BOX,
+		COLORS_BONES,
+		COLORS_DINDICATOR,
+		COLORS_CHAMS,
+		COLORS_CHAMS_XQZ,
+		COLORS_ENEMY,
+		COLORS_TEAM
+	};
+
+	int selectedPrev;
+	int selectedRedPrev;
+	int selectedGreenPrev;
+	int selectedBluePrev;
+
+	
 };
 
 extern Misc g_Misc;

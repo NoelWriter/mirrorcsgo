@@ -1,5 +1,6 @@
 #include "GUI.h"
 #include "..\Settings.h"
+#include "..\Features\Misc.h"
 
 #include <execution>
 #include <algorithm>
@@ -597,13 +598,13 @@ void Tab::Initialize()
 void Tab::Render()
 {
     /* Tab inside, for now menustyle color */
-    g_Render.RectFilled(rcBoundingBox, style.colMenuStyle);
+    g_Render.RectFilled(rcBoundingBox, style.colHeader);
 
     /* Tab outline */
     g_Render.Rect(rcBoundingBox, style.colSectionOutl);
 
     /* Render tab name */
-    g_Render.String(rcBoundingBox.Mid(), CD3DFONT_CENTERED_X | CD3DFONT_CENTERED_Y | CD3DFONT_DROPSHADOW, style.colText(bIsActive ? 255 : 150), pFont.get(), strLabel.c_str());
+    g_Render.String(rcBoundingBox.Mid(), CD3DFONT_CENTERED_X | CD3DFONT_CENTERED_Y | CD3DFONT_DROPSHADOW, g_Misc.cMenu(bIsActive ? 255 : 150), pFont.get(), strLabel.c_str());
 
     
 
@@ -862,7 +863,7 @@ void Checkbox::Render()
 
     /* Fill the inside of the button depending on activation */
     if (*this->bCheckboxValue)
-        g_Render.RectFilled(this->rcBox, style.colMenuStyle);
+        g_Render.RectFilled(this->rcBox, g_Misc.cMenu);
 
     /* If the button is hovered, make it lighter */
     if (this->bIsHovered)
@@ -924,7 +925,7 @@ Button::Button(const std::string& strLabel, void(&fnPointer)(), ObjectPtr pParen
 void Button::Render()
 {
     /* Fill the body of the button */
-    g_Render.RectFilled(this->rcBoundingBox, style.colMenuStyle);
+    g_Render.RectFilled(this->rcBoundingBox, g_Misc.cMenu);
 
     /* Button outline */
     g_Render.Rect(this->rcBoundingBox, style.colSectionOutl);
@@ -1198,11 +1199,13 @@ void Slider<T>::Render()
 
     /* Fill the part of slider before the represented value */
     g_Render.RectFilled({ this->GetZeroPos(), this->rcSelectable.top + 1, this->iButtonPosX, this->rcSelectable.bottom - 1 },
-                        style.colMenuStyle);
+                        g_Misc.cMenu);
 
     /* Represented position of the value & its outline */
     g_Render.RectFilled(this->iButtonPosX - 1, this->rcSelectable.top - 1, this->iButtonPosX + 1, this->rcSelectable.bottom + 1, Color::White());
     g_Render.RectFilled(this->iButtonPosX + 1, this->rcSelectable.top - 1, this->iButtonPosX + 1, this->rcSelectable.bottom + 1, Color::Grey());
+
+	this->SetValue(static_cast<T>(*this->nValue));
 }
 
 

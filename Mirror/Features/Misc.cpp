@@ -2,6 +2,7 @@
 #include "..\SDK\CInput.h"
 #include "..\Hooks.h"
 #include "..\Utils\ICvar.h"
+#include "..\Utils\Color.h"
 
 #define CAM_MIN_DIST		16.0 // Don't let the camera get any closer than ...
 #define CAM_MAX_DIST		96.0 // ... or any farther away than ...
@@ -95,6 +96,8 @@ void Misc::doMisc()
 	if (g_Settings.bBhopEnabled)
 		this->DoBhop();
 
+	if (g_Settings.bMiscCrouchExploit)
+		this->CrouchExploit();
 }
 
 void Misc::DoThirdPerson() {
@@ -119,6 +122,175 @@ void Misc::DoThirdPerson() {
 		}
 	}
 }
+
+bool switchPacket = false;
+void Misc::CrouchExploit() {
+
+	g::pCmd->buttons |= IN_BULLRUSH;
+	/*PVOID pebp;
+	__asm mov pebp, ebp;
+	bool* pbSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
+	bool& bSendPacket = *pbSendPacket;
+
+	
+
+	bool do_once = false, _do;
+
+	if (g::pCmd->buttons & IN_DUCK)
+	{
+		switchPacket != switchPacket;
+		if (!switchPacket) {
+			bSendPacket = true;
+		}
+		else {
+			bSendPacket = false;
+			g::pCmd->buttons &= ~IN_DUCK;
+		}
+	}*/
+}
+
+void Misc::HandleColors() {
+
+	// If we change selected items
+	if (selectedPrev != g_Settings.bMiscColorSelected)
+	{
+		switch (g_Settings.bMiscColorSelected)
+		{
+		case COLORS_MENU:
+			selectedRedPrev = cMenu.red;
+			selectedGreenPrev = cMenu.green;
+			selectedBluePrev = cMenu.blue;
+			g_Settings.bMiscRed = cMenu.red;
+			g_Settings.bMiscGreen = cMenu.green;
+			g_Settings.bMiscBlue = cMenu.blue;
+			break;
+		case COLORS_BOX:
+			selectedRedPrev = cBox.red;
+			selectedGreenPrev = cBox.green;
+			selectedBluePrev = cBox.blue;
+			g_Settings.bMiscRed = cBox.red;
+			g_Settings.bMiscGreen = cBox.green;
+			g_Settings.bMiscBlue = cBox.blue;
+			break;
+		case COLORS_BONES:
+			selectedRedPrev = cBone.red;
+			selectedGreenPrev = cBone.green;
+			selectedBluePrev = cBone.blue;
+			g_Settings.bMiscRed = cBone.red;
+			g_Settings.bMiscGreen = cBone.green;
+			g_Settings.bMiscBlue = cBone.blue;
+			break;
+		case COLORS_DINDICATOR:
+			selectedRedPrev = cDIndicator.red;
+			selectedGreenPrev = cDIndicator.green;
+			selectedBluePrev = cDIndicator.blue;
+			g_Settings.bMiscRed = cDIndicator.red;
+			g_Settings.bMiscGreen = cDIndicator.green;
+			g_Settings.bMiscBlue = cDIndicator.blue;
+			break;
+		case COLORS_CHAMS:
+			selectedRedPrev = cChams.red;
+			selectedGreenPrev = cChams.green;
+			selectedBluePrev = cChams.blue;
+			g_Settings.bMiscRed = cChams.red;
+			g_Settings.bMiscGreen = cChams.green;
+			g_Settings.bMiscBlue = cChams.blue;
+			break;
+		case COLORS_CHAMS_XQZ:
+			selectedRedPrev = cChamsXQZ.red;
+			selectedGreenPrev = cChamsXQZ.green;
+			selectedBluePrev = cChamsXQZ.blue;
+			g_Settings.bMiscRed = cChamsXQZ.red;
+			g_Settings.bMiscGreen = cChamsXQZ.green;
+			g_Settings.bMiscBlue = cChamsXQZ.blue;
+			break;
+		case COLORS_ENEMY:
+			selectedRedPrev = cEnemy.red;
+			selectedGreenPrev = cEnemy.green;
+			selectedBluePrev = cEnemy.blue;
+			g_Settings.bMiscRed = cEnemy.red;
+			g_Settings.bMiscGreen = cEnemy.green;
+			g_Settings.bMiscBlue = cEnemy.blue;
+			break;
+		case COLORS_TEAM:
+			selectedRedPrev = cTeam.red;
+			selectedGreenPrev = cTeam.green;
+			selectedBluePrev = cTeam.blue;
+			g_Settings.bMiscRed = cTeam.red;
+			g_Settings.bMiscGreen = cTeam.green;
+			g_Settings.bMiscBlue = cTeam.blue;
+			break;
+		}
+		selectedPrev = g_Settings.bMiscColorSelected;
+	}
+
+	// If we didn't change any color settings we should not reassign colors
+	if ((selectedRedPrev == g_Settings.bMiscRed) && (selectedGreenPrev == g_Settings.bMiscGreen) && (selectedBluePrev == g_Settings.bMiscBlue))
+		return;
+	
+	switch (g_Settings.bMiscColorSelected)
+	{
+	case COLORS_MENU:
+		cMenu.red = g_Settings.bMiscRed;
+		cMenu.green = g_Settings.bMiscGreen;
+		cMenu.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_BOX:
+		cBox.red = g_Settings.bMiscRed;
+		cBox.green = g_Settings.bMiscGreen;
+		cBox.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_BONES:
+		cBone.red = g_Settings.bMiscRed;
+		cBone.green = g_Settings.bMiscGreen;
+		cBone.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_DINDICATOR:
+		cDIndicator.red = g_Settings.bMiscRed;
+		cDIndicator.green = g_Settings.bMiscGreen;
+		cDIndicator.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_CHAMS:
+		cChams.red = g_Settings.bMiscRed;
+		cChams.green = g_Settings.bMiscGreen;
+		cChams.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_CHAMS_XQZ:
+		cChamsXQZ.red = g_Settings.bMiscRed;
+		cChamsXQZ.green = g_Settings.bMiscGreen;
+		cChamsXQZ.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_ENEMY:
+		cEnemy.red = g_Settings.bMiscRed;
+		cEnemy.green = g_Settings.bMiscGreen;
+		cEnemy.blue = g_Settings.bMiscBlue;
+		break;
+	case COLORS_TEAM:
+		cTeam.red = g_Settings.bMiscRed;
+		cTeam.green = g_Settings.bMiscGreen;
+		cTeam.blue = g_Settings.bMiscBlue;
+		break;
+	}
+
+	selectedRedPrev = g_Settings.bMiscRed;
+	selectedGreenPrev = g_Settings.bMiscGreen;
+	selectedBluePrev = g_Settings.bMiscBlue;
+}
+
+//Color Misc::GetColor(int colorSelected)
+//{
+//	switch (colorSelected)
+//	{
+//	case COLORS_MENU:
+//		return;
+//	case COLORS_BOX:
+//		break;
+//	case COLORS_BONES:
+//		break;
+//	case COLORS_DINDICATOR:
+//		break;
+//	}
+//}
 
 
 void Misc::PositionCamera(C_BaseEntity* pPlayer, QAngle angles)

@@ -2,6 +2,8 @@
 #include "..\Utils\Utils.h"
 #include "..\Utils\GlobalVars.h"
 #include "..\Hooks.h"
+#include "Misc.h"
+
 DamageIndicators g_pDamageIndicator;
 void DamageIndicators::paint() {
 
@@ -35,7 +37,7 @@ void DamageIndicators::paint() {
 			//g_Render.String(screen_pos.x, screen_pos.y, Color(int(g_Options.Colors.damageindicator[0] * 255.f), int(g_Options.Colors.damageindicator[1] * 255.f), int(g_Options.Colors.damageindicator[2] * 255.f)), g_Render->font.ESP, std::to_string(data[i].iDamage).c_str());
 			g_Render.String(screen_pos.x, screen_pos.y,
 				CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
-				Color::Orange(),
+				g_Misc.cDIndicator,
 				g_Fonts.pFontTahoma10.get(), std::to_string(data[i].iDamage).c_str());
 		}
 	}

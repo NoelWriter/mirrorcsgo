@@ -29,6 +29,11 @@ public:
     bool  bMenuOpened			= false;
 	bool  bBhopEnabled			= false;
 	bool  bMiscThirdPerson		= false;
+	int   bMiscColorSelected	= 0;
+	int   bMiscRed				= 0;
+	int	  bMiscGreen			= 0;
+	int   bMiscBlue				= 0;
+	bool  bMiscCrouchExploit	= false;
 
 	//ESP
 	bool  bEspEnable			= false;

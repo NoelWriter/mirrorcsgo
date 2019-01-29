@@ -4,6 +4,7 @@
 #include "..\SDK\PlayerInfo.h"
 #include "..\SDK\IVModelInfoClient.hpp"
 #include "..\Utils\CGrenadeAPI.h"
+#include "Misc.h"
 
 ESP g_ESP;
 
@@ -23,7 +24,7 @@ void ESP::RenderBox(C_BaseEntity* pEnt)
                h  = int(std::roundf(vecScreenBottom.y - vecScreenOrigin.y)),
                w  = int(std::roundf(h * 0.25f));
 
-	auto boxColor = Color::Black();//g::pLocalEntity->CanSeePlayer(pEnt, pEnt->GetBonePos(8)) ? Color::Black() : Color::Red(); // && !pEnt->IsBehindSmoke(g::pLocalEntity) crashes
+	auto boxColor = g_Misc.cBox;//g::pLocalEntity->CanSeePlayer(pEnt, pEnt->GetBonePos(8)) ? Color::Black() : Color::Red(); // && !pEnt->IsBehindSmoke(g::pLocalEntity) crashes
 
 	//Bottom
 	g_Render.Line(sx - w, sy, sx - w * 0.5, sy, boxColor);
@@ -95,7 +96,7 @@ void ESP::RenderName(C_BaseEntity* pEnt, int iterator)
     int h  = std::roundf(vecScreenBottom.y - vecScreenOrigin.y);
 
     g_Render.String(sx, sy + h - 16, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
-                    (localTeam == pEnt->GetTeam()) ? teamColor : enemyColor,
+                    (localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
                     g_Fonts.pFontTahoma10.get(), pInfo.szName);
 }
 
@@ -116,7 +117,7 @@ void ESP::RenderWeaponName(C_BaseEntity* pEnt)
     std::transform(strWeaponName.begin(), strWeaponName.end(), strWeaponName.begin(), ::toupper);
 
 	g_Render.String(int(vecScreenOrigin.x), int(vecScreenOrigin.y), CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
-                    (localTeam == pEnt->GetTeam()) ? teamColor : enemyColor,
+                    (localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
                     g_Fonts.pFontTahoma10.get(), strWeaponName.c_str());
 }
 
@@ -146,7 +147,7 @@ void ESP::DrawBoneESP(C_BaseEntity* pBaseEntity, int it)
 			if (Utils::WorldToScreen(vParent, sParent) && Utils::WorldToScreen(vChild, sChild))
 			{
 				// Render a line on each connection
-				g_Render.Line(sParent[0], sParent[1], sChild[0], sChild[1], Color(0, 0, 0, 255));
+				g_Render.Line(sParent[0], sParent[1], sChild[0], sChild[1], g_Misc.cBone);
 			}
 		}
 	}
@@ -226,8 +227,8 @@ void ESP::DrawHealth(C_BaseEntity* pEnt)
 	int h = std::roundf(vecScreenBottom.y - vecScreenOrigin.y);
 	int w = std::roundf(vecScreenBottom.x - vecScreenOrigin.x);
 
-	g_Render.String(sx + w + 32, sy + h - 32, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
-		(localTeam == pEnt->GetTeam()) ? teamColor : enemyColor,
+	g_Render.String(sx + w + 32, sy + h, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
+		(localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
 		g_Fonts.pFontTahoma10.get(), std::to_string(pHealth).c_str());
 }
 

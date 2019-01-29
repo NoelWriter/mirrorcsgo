@@ -32,8 +32,8 @@ namespace ui
 
     struct MenuStyle
     {
-        int   iPaddingX       = 15;                     /*- Padding between sections                            -*/
-        int   iPaddingY       = 3;                      /*- Padding between selectables                         -*/
+        int   iPaddingX       = 10;                     /*- Padding between sections                            -*/
+        int   iPaddingY       = 5;                      /*- Padding between selectables                         -*/
         int   iMinThumbSize   = 10;
         Color colCursor       = { 0, 0, 0, 0 };   /*- Color of the mouse cursor                           -*/
         Color colHover        = { 100, 100, 100, 30 };  /*- Color applied on the obj when mouse hovers above it -*/

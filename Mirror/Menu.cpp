@@ -101,11 +101,18 @@ void MenuMain::Initialize()
 				sectMisc->AddDummy(3);
 				sectMisc->AddCheckBox("Bhop", &g_Settings.bBhopEnabled);
 				sectMisc->AddCheckBox("Third Person", &g_Settings.bMiscThirdPerson);
+				sectMisc->AddCheckBox("Crouch Exploit", &g_Settings.bMiscCrouchExploit);
 			}
 			auto sectMisc2 = tab4->AddSection("Misc", 1.f);
 			{
 				sectMisc2->AddDummy(3);
 				sectMisc2->AddButton("Detach", Detach);
+				sectMisc2->AddDummy(3);
+				sectMisc2->AddCombo("Color Settings", &g_Settings.bMiscColorSelected, std::vector<std::string>{ "Menu", "ESP Box", "ESP Bones", "Damage indicator", "Chams", "Chams Invisible", "Enemy", "Team" });
+				sectMisc2->AddSlider("Red", &g_Settings.bMiscRed, 0, 255);
+				sectMisc2->AddSlider("Green", &g_Settings.bMiscGreen, 0, 255);
+				sectMisc2->AddSlider("Blue", &g_Settings.bMiscBlue, 0, 255);
+
 			}
 		}
 		mainWindow->AddChild(tab4);
