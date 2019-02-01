@@ -6,7 +6,7 @@
 #include "..\Hooks.h"
 #include "..\SDK\CGlobalVarsBase.h"
 #include "..\SDK\IClientEntity.h"
-#include "Autowall.h"
+#include "Ragewall.h"
 
 #define TIME_TO_TICKS( dt )	( ( int )( 0.5f + ( float )( dt ) / g_pGlobalVars->intervalPerTick ) )
 

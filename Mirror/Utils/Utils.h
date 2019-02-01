@@ -148,6 +148,21 @@ public:
 		return std::remainder(flAng, 360.0f);
 	}
 
+	static inline void normalize_angles(QAngle& angles) {
+		while (angles.y <= -180.f) angles.y += 360.f;
+		while (angles.y > 180.f) angles.y -= 360.f;
+		while (angles.x <= -180.f) angles.x += 360.f;
+		while (angles.x > 180.f) angles.x -= 360.f;
+
+
+		if (angles.x > 89.f) angles.x = 89.f;
+		if (angles.x < -89.f) angles.x = -89.f;
+		if (angles.y < -180.f) angles.y = -179.999f;
+		if (angles.y > 180.f) angles.y = 179.999f;
+
+		angles.z = 0.f;
+	}
+
 	static inline void ClampViewAngles(QAngle& vecAng)
 	{
 		vecAng.x = max(-89.0f, min(89.0f, NormalizeAngle(vecAng.x)));
@@ -247,12 +262,12 @@ public:
 		}
 		else
 		{
-			yaw = (atan2(forward[1], forward[0]) * 180 / M_PI);
+			yaw = (atan2(forward[1], forward[0]) * 180.f / M_PI);
 			if (yaw < 0)
 				yaw += 360;
 
 			tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
-			pitch = (atan2(-forward[2], tmp) * 180 / M_PI);
+			pitch = (atan2(-forward[2], tmp) * 180.f / M_PI);
 			if (pitch < 0)
 				pitch += 360;
 		}

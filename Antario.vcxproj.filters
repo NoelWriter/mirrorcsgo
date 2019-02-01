@@ -66,9 +66,6 @@
     <ClCompile Include="Mirror\Features\Chams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Autowall.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Mirror\Features\Misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +76,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mirror\Features\Resolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mirror\Features\Ragewall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -239,13 +239,13 @@
     <ClInclude Include="Mirror\Features\AntiAim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Autowall.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mirror\Features\DamageIndicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mirror\Features\Resolver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Features\Ragewall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

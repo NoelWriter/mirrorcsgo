@@ -10,7 +10,6 @@ void DamageIndicators::paint() {
 	if (!g::pLocalEntity || !g::pLocalEntity->IsAlive() || !g_pEngine->IsInGame() || g::pLocalEntity->IsDormant() )
 		return;
 
-
 	auto m_local = g::pLocalEntity;
 
 	float current_time = m_local->GetTickBase() * g_pGlobalVars->intervalPerTick;
@@ -34,7 +33,6 @@ void DamageIndicators::paint() {
 		Vector screen_pos;
 
 		if (Utils::WorldToScreen(data[i].Position, screen_pos)) {
-			//g_Render.String(screen_pos.x, screen_pos.y, Color(int(g_Options.Colors.damageindicator[0] * 255.f), int(g_Options.Colors.damageindicator[1] * 255.f), int(g_Options.Colors.damageindicator[2] * 255.f)), g_Render->font.ESP, std::to_string(data[i].iDamage).c_str());
 			g_Render.String(screen_pos.x, screen_pos.y,
 				CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
 				g_Misc.cDIndicator,

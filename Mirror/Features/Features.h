@@ -11,7 +11,7 @@
 #include "Backtrack.h"
 #include "Aimbot.h"
 #include "Chams.h"
-#include "Autowall.h"
+#include "Ragewall.h"
 #include "AntiAim.h"
 #include "DamageIndicator.h"
 #include "Resolver.h"

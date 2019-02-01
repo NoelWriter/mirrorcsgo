@@ -71,7 +71,7 @@ void Hooks::Restore()
 		g_Hooks.pRenderViewHook->Unhook(vtable_indexes::sceneend);
 		g_Hooks.pModelRenderHook->Unhook(vtable_indexes::drawmodelexecute);
 		g_Hooks.pClientHook->Unhook(vtable_indexes::framestagenotify);
-		g_Hooks.pClientModeHook->Unhook(vtable_indexes::overrideView);
+		//g_Hooks.pClientModeHook->Unhook(vtable_indexes::overrideView);
 		g_Hooks.pConvarHook->Unhook(vtable_indexes::getboolsvcheats);
 
         SetWindowLongPtr(g_Hooks.hCSGOWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(g_Hooks.pOriginalWNDProc));
@@ -93,32 +93,38 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
     static auto oCreateMove = g_Hooks.pClientModeHook->GetOriginal<CreateMove_t>(vtable_indexes::createMove);
     oCreateMove(thisptr, edx, sample_frametime, pCmd);
 
+	// Check if we can use commands
     if (!pCmd || !pCmd->command_number)
         return oCreateMove;
 
     // Get globals
     g::pCmd         = pCmd;
     g::pLocalEntity = g_pEntityList->GetClientEntity(g_pEngine->GetLocalPlayer());
-    if (!g::pLocalEntity)
-        return oCreateMove;
-
 	g::pActiveWeapon = g::pLocalEntity->GetActiveWeapon();
 	g::bSendPacket	= true;
 	g::pVisualAngles = QAngle(0, 0, 0);
 	g::pThirdperson = false;
 
+	// Check globals
+	if (!g::pLocalEntity)
+		return oCreateMove;
+	if (!g::pActiveWeapon)
+		return oCreateMove;
+
+	// Frame Pointer for bSendPacket
 	uintptr_t *framePtr;
 	__asm mov framePtr, ebp;
 
-	g_Misc.doMisc();
-
+	// MovementFix 
 	QAngle wish_angle = pCmd->viewangles;
 
+	// Misc Functions
 	g_Misc.DoThirdPerson();
+	g_Misc.doMisc();
 
-    // run shit outside enginepred
     engine_prediction::RunEnginePred();
 	{
+		// Running features in engine prediction
 		g_Aimbot.DoAimbot(pCmd);
 		backtracking->legitBackTrack(pCmd);
 		g_AntiAim.doAntiAim(pCmd);
@@ -126,16 +132,20 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	}
     engine_prediction::EndEnginePred();
 
+	// Choke Packets
 	*(bool*)(*framePtr - 0x1C) = g::bSendPacket;
 
+	// Visual Angles for when we are in thirdperson
 	g::pVisualAngles = pCmd->viewangles;
 
+	// Clamp movement speed
 	pCmd->forwardmove = g_Misc.clamp(pCmd->forwardmove, -450.f, 450.f);
 	pCmd->sidemove = g_Misc.clamp(pCmd->sidemove, -450.f, 450.f);
 	pCmd->upmove = g_Misc.clamp(pCmd->upmove, -320.f, 320.f);
-	pCmd->viewangles.Normalize();
-	
 
+	// Clamp viewangles.
+	pCmd->viewangles.Normalize();
+	Utils::normalize_angles(pCmd->viewangles);
 
     return false;
 }
@@ -152,16 +162,14 @@ void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 
 	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START)
 	{
-		g_Resolver.DoResolver();
+		if (g_pEngine->IsConnected())
+			g_Resolver.DoResolver();
 	}
 
 	if (Stage == ClientFrameStage_t::FRAME_RENDER_START)
 	{
-		if (g::pLocalEntity->IsAlive())
-		{
-			if (g_pInput->m_fCameraInThirdPerson)
-				g::pLocalEntity->SetVisualAngle(QAngle(g::pVisualAngles.x, g::pVisualAngles.y, 0));
-		}
+		if (g::pLocalEntity->IsAlive() && g_pInput->m_fCameraInThirdPerson)
+			g::pLocalEntity->SetVisualAngle(QAngle(g::pVisualAngles.x, g::pVisualAngles.y, 0));
 	}
 
 	ofunc(Stage);
@@ -339,7 +347,7 @@ void __stdcall Hooks::DrawModelExecute(IMatRenderContext* ctx, const DrawModelSt
 bool __fastcall Hooks::GetBool_SVCheats_h(PVOID pConVar, int edx)
 {
 	static auto oGetBool = g_Hooks.pConvarHook->GetOriginal<GetBool_t>(vtable_indexes::getboolsvcheats);
-	// xref : "Pitch: %6.1f   Yaw: %6.1f   Dist: %6.1f %16s"
+
 	static DWORD CAM_THINK = (DWORD)Utils::FindSignature(("client_panorama.dll"), "85 C0 75 30 38 86");
 	if (!pConVar)
 		return false;

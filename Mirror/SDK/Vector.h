@@ -13,7 +13,7 @@
 
 #define FastSqrt(x)	(sqrt)(x)
 
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
 
 #define M_PI_2      (M_PI * 2.f)
 

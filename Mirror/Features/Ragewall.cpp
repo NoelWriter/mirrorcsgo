@@ -1,4 +1,4 @@
-#include "autowall.h"
+#include "Ragewall.h"
 #include "Math.h"
 #include "../SDK/IEngineTrace.hpp"
 #include "../SDK/IPhysics.h"
@@ -24,6 +24,42 @@
 #define HITGROUP_GEAR        10
 #define PI 3.14159265358979323846f
 #define TIME_TO_TICKS(dt) ((int)( 0.5f + (float)(dt) / g_pGlobalVars->intervalPerTick))
+#define HITGROUP_GENERIC    0
+#define HITGROUP_HEAD        1
+#define HITGROUP_CHEST        2
+#define HITGROUP_STOMACH    3
+#define HITGROUP_LEFTARM    4    
+#define HITGROUP_RIGHTARM    5
+#define HITGROUP_LEFTLEG    6
+#define HITGROUP_RIGHTLEG    7
+#define HITGROUP_GEAR        10
+#define DAMAGE_NO		0
+#define DAMAGE_EVENTS_ONLY	1	
+#define DAMAGE_YES		2
+#define DAMAGE_AIM		3
+#define CHAR_TEX_ANTLION		'A'
+#define CHAR_TEX_BLOODYFLESH	'B'
+#define	CHAR_TEX_CONCRETE		'C'
+#define CHAR_TEX_DIRT			'D'
+#define CHAR_TEX_EGGSHELL		'E' ///< the egg sacs in the tunnels in ep2.
+#define CHAR_TEX_FLESH			'F'
+#define CHAR_TEX_GRATE			'G'
+#define CHAR_TEX_ALIENFLESH		'H'
+#define CHAR_TEX_CLIP			'I'
+#define CHAR_TEX_PLASTIC		'L'
+#define CHAR_TEX_METAL			'M'
+#define CHAR_TEX_SAND			'N'
+#define CHAR_TEX_FOLIAGE		'O'
+#define CHAR_TEX_COMPUTER		'P'
+#define CHAR_TEX_SLOSH			'S'
+#define CHAR_TEX_TILE			'T'
+#define CHAR_TEX_CARDBOARD		'U'
+#define CHAR_TEX_VENT			'V'
+#define CHAR_TEX_WOOD			'W'
+#define CHAR_TEX_GLASS			'Y'
+#define CHAR_TEX_WARPSHIELD		'Z' ///< weird-looking jello effect for advisor shield.
+
+RageWall g_RageWall;
 
 void SinCos2634(float a, float* s, float*c)
 {
@@ -41,58 +77,6 @@ void CalcAngle234(Vector src, Vector dst, QAngle &angles)
 
 	if (delta.x >= 0.0)
 		angles.y += 180.0f;
-}
-
-void VectorAngles234(Vector forward, QAngle &angles)
-{
-	float tmp, yaw, pitch;
-
-	if (forward[2] == 0 && forward[0] == 0)
-	{
-		yaw = 0;
-
-		if (forward[2] > 0)
-			pitch = 90;
-		else
-			pitch = 270;
-	}
-	else
-	{
-		yaw = (atan2(forward[1], forward[0]) * 180 / PI);
-
-		if (yaw < 0)
-			yaw += 360;
-
-		tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
-		pitch = (atan2(-forward[2], tmp) * 180 / PI);
-
-		if (pitch < 0)
-			pitch += 360;
-	}
-
-	if (pitch > 180)
-		pitch -= 360;
-	else if (pitch < -180)
-		pitch += 360;
-
-	if (yaw > 180)
-		yaw -= 360;
-	else if (yaw < -180)
-		yaw += 360;
-
-	if (pitch > 89)
-		pitch = 89;
-	else if (pitch < -89)
-		pitch = -89;
-
-	if (yaw > 180)
-		yaw = 180;
-	else if (yaw < -180)
-		yaw = -180;
-
-	angles[0] = pitch;
-	angles[1] = yaw;
-	angles[2] = 0;
 }
 
 void AngleVectors234(const QAngle &angles, Vector forward)
@@ -142,44 +126,6 @@ inline bool CGameTrace::DidHitNonWorldEntity() const
 {
 	return hit_entity != NULL && !DidHitWorld();
 }
-
-RageWall g_RageWall;
-
-#define HITGROUP_GENERIC    0
-#define HITGROUP_HEAD        1
-#define HITGROUP_CHEST        2
-#define HITGROUP_STOMACH    3
-#define HITGROUP_LEFTARM    4    
-#define HITGROUP_RIGHTARM    5
-#define HITGROUP_LEFTLEG    6
-#define HITGROUP_RIGHTLEG    7
-#define HITGROUP_GEAR        10
-#define DAMAGE_NO		0
-#define DAMAGE_EVENTS_ONLY	1	
-#define DAMAGE_YES		2
-#define DAMAGE_AIM		3
-#define CHAR_TEX_ANTLION		'A'
-#define CHAR_TEX_BLOODYFLESH	'B'
-#define	CHAR_TEX_CONCRETE		'C'
-#define CHAR_TEX_DIRT			'D'
-#define CHAR_TEX_EGGSHELL		'E' ///< the egg sacs in the tunnels in ep2.
-#define CHAR_TEX_FLESH			'F'
-#define CHAR_TEX_GRATE			'G'
-#define CHAR_TEX_ALIENFLESH		'H'
-#define CHAR_TEX_CLIP			'I'
-#define CHAR_TEX_PLASTIC		'L'
-#define CHAR_TEX_METAL			'M'
-#define CHAR_TEX_SAND			'N'
-#define CHAR_TEX_FOLIAGE		'O'
-#define CHAR_TEX_COMPUTER		'P'
-#define CHAR_TEX_SLOSH			'S'
-#define CHAR_TEX_TILE			'T'
-#define CHAR_TEX_CARDBOARD		'U'
-#define CHAR_TEX_VENT			'V'
-#define CHAR_TEX_WOOD			'W'
-#define CHAR_TEX_GLASS			'Y'
-#define CHAR_TEX_WARPSHIELD		'Z' ///< weird-looking jello effect for advisor shield.
-
 
 // Usefull Math Stuff (It's different then the ones we have in the Utils class)
 void SinCos(float a, float* s, float*c)

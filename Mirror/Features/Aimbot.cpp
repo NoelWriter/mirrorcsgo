@@ -6,11 +6,8 @@
 #include "..\SDK\Studio.hpp"
 #include "..\Utils\Interfaces.h"
 #include "Backtrack.h"
-#include "Autowall.h"
+#include "Ragewall.h"
 #include "..\SDK\CGlobalVarsBase.h"
-
-// Define some constant variables
-#define PI 3.14159265358979323846264338327f
 
 // Declare classes
 Aimbot g_Aimbot;
@@ -228,7 +225,7 @@ float Aimbot::Hitchance(C_BaseCombatWeapon* pWeapon, float hitChance)
 	if (hitChance > 0)
 	{
 		float inaccuracy = pWeapon->GetInaccuracy();
-		if (inaccuracy == 0) inaccuracy = 0.0000001;
+		if (inaccuracy == 0) inaccuracy = 0.0000001f;
 		inaccuracy = 1 / inaccuracy;
 		hitchance = inaccuracy;
 	}

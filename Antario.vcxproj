@@ -96,7 +96,7 @@
   <ItemGroup>
     <ClCompile Include="Mirror\Features\Aimbot.cpp" />
     <ClCompile Include="Mirror\Features\AntiAim.cpp" />
-    <ClCompile Include="Mirror\Features\Autowall.cpp" />
+    <ClCompile Include="Mirror\Features\Ragewall.cpp" />
     <ClCompile Include="Mirror\Features\Backtrack.cpp" />
     <ClCompile Include="Mirror\Features\Chams.cpp" />
     <ClCompile Include="Mirror\Features\DamageIndicator.cpp" />
@@ -120,7 +120,7 @@
   <ItemGroup>
     <ClInclude Include="Mirror\Features\Aimbot.h" />
     <ClInclude Include="Mirror\Features\AntiAim.h" />
-    <ClInclude Include="Mirror\Features\Autowall.h" />
+    <ClInclude Include="Mirror\Features\Ragewall.h" />
     <ClInclude Include="Mirror\Features\Backtrack.h" />
     <ClInclude Include="Mirror\Features\Chams.h" />
     <ClInclude Include="Mirror\Features\DamageIndicator.h" />

@@ -232,7 +232,7 @@ namespace ui
 		bool CanHaveFocus() const override { return true; }
 
 		void UpdateThumbRect();
-		int  GetScrollAmmount() const { return this->flScrollAmmount; };
+		float GetScrollAmmount() const { return this->flScrollAmmount; };
 	private:
 		void HandleArrowHeldMode();
 		float flScrollAmmount; /* The offset of the initial position            */
