@@ -286,7 +286,7 @@ float Aimbot::getSmooth(C_BaseCombatWeapon* weapon) {
 }
 
 int Aimbot::getHitbox(C_BaseCombatWeapon* weapon) {
-	int curSelected;
+	int curSelected = 3;
 	if (weapon->isSniper())
 		curSelected = g_Settings.bAimbotHitboxSniper;
 	if (weapon->isRifle())

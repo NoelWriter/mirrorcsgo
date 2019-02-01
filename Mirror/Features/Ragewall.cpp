@@ -404,7 +404,8 @@ bool RageWall::HandleBulletPenetration(WeaponInfo_t *wpn_data, FireBulletData &d
 		combined_penetration_modifier = 3.0f;
 		final_damage_modifier = 0.05f;
 	}
-	else if (bSolidSurf || bLightSurf)
+	
+	if (bSolidSurf || bLightSurf)
 	{
 		combined_penetration_modifier = 1.0f;
 		final_damage_modifier = 0.16f;
@@ -412,6 +413,7 @@ bool RageWall::HandleBulletPenetration(WeaponInfo_t *wpn_data, FireBulletData &d
 	else
 	{
 		combined_penetration_modifier = (enter_surf_penetration_mod + exit_surf_penetration_mod) * 0.5f;
+		final_damage_modifier = 0.16f;
 	}
 
 	if (enter_material == exit_material)
@@ -422,11 +424,13 @@ bool RageWall::HandleBulletPenetration(WeaponInfo_t *wpn_data, FireBulletData &d
 			combined_penetration_modifier = 2.0f;
 	}
 
-	float modifier = fmaxf(0.0f, 1.0f / combined_penetration_modifier);
 	float thickness = (trace_exit.endpos - data.enter_trace.endpos).LengthSqr();
-	float taken_damage = ((modifier * 3.0f) * fmaxf(0.0f, (3.0f / wpn_data->m_fPenetration()) * 1.25f) + (data.current_damage * final_damage_modifier)) + ((thickness * modifier) / 24.0f);
+	float modifier = fmaxf(0.f, 1.f / combined_penetration_modifier);
 
-	float lost_damage = fmaxf(0.0f, taken_damage);
+	float lost_damage = fmaxf(
+		((modifier * thickness) / 24.f) //* 0.041666668
+		+ ((data.current_damage * final_damage_modifier)
+			+ (fmaxf(3.75 / wpn_data->m_fPenetration(), 0.f) * 3.f * modifier)), 0.f);
 
 	if (lost_damage > data.current_damage)
 		return false;
@@ -788,21 +792,21 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		}
 	}
 
-	pCmd->tick_count = FixTickcount(pEnt);
+	//pCmd->tick_count = FixTickcount(pEnt);
 
 	return true;
 }
 
-int RageWall::FixTickcount(C_BaseEntity * player)
-{
-	int idx = player->EntIndex();
-
-	auto cl_interp_ratio = g_pCVar->FindVar("cl_interp_ratio");
-	auto cl_updaterate = g_pCVar->FindVar("cl_updaterate");
-	int lerpTicks = TIME_TO_TICKS(cl_interp_ratio->GetFloat() / cl_updaterate->GetFloat());
-
-	return TIME_TO_TICKS(player->GetSimulationTime()) + lerpTicks;
-}
+//int RageWall::FixTickcount(C_BaseEntity * player)
+//{
+//	int idx = player->EntIndex();
+//
+//	auto cl_interp_ratio = g_pCVar->FindVar("cl_interp_ratio");
+//	auto cl_updaterate = g_pCVar->FindVar("cl_updaterate");
+//	int lerpTicks = TIME_TO_TICKS(cl_interp_ratio->GetFloat() / cl_updaterate->GetFloat());
+//
+//	return TIME_TO_TICKS(player->GetSimulationTime()) + lerpTicks;
+//}
 
 float RandomFloat(float min, float max)
 {

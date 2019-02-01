@@ -27,9 +27,8 @@ void LoadFromBuffer(KeyValues* keyValues, char const* resourceName, const char* 
 {
 	static uintptr_t offset;
 	if (!offset) offset = Utils::FindSignature("client_panorama.dll" , "55 8B EC 83 E4 F8 83 EC 34 53 8B 5D 0C 89 4C 24 04");
-	static auto function = (void(__thiscall*)(KeyValues*, char const*, const char*, void*, const char*, void*))offset;
-	function(keyValues, resourceName, pBuffer, 0, 0, 0);
-
+	static auto function = (void(__thiscall*)(KeyValues*, const char*, const char*, void*, const char*, void*, void*))offset;
+	function(keyValues, resourceName, pBuffer, 0, 0, 0, 0);
 }
 
 IMaterial* CreateMaterial(bool Ignore, bool Lit, bool Wireframe)
