@@ -34,6 +34,8 @@ public:
 	int	  bMiscGreen			= 0;
 	int   bMiscBlue				= 0;
 	bool  bMiscCrouchExploit	= false;
+	bool  bMiscFakelag			= false;
+	int	  bMiscFakelagAmount	= 1;
 
 	//ESP
 	bool  bEspEnable			= false;
@@ -86,6 +88,7 @@ public:
 
 	bool  bRagebotAAEnable		= false;
 	int   bRagebotAAYawReal		= 0;
+	bool  bRagebotResolver		= false;
 };
 
 extern Settings g_Settings;

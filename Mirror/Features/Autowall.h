@@ -43,6 +43,8 @@ public:
 
 	bool TargetSpecificEnt(C_BaseEntity * pEnt, CUserCmd * pCmd);
 
+	int FixTickcount(C_BaseEntity * player);
+
 	bool HitChance(QAngle angles, C_BaseEntity * ent, float chance);
 
 	bool CheckTarget(int i);

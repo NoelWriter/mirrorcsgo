@@ -13,6 +13,23 @@
 // class predefinition
 class C_BaseCombatWeapon;
 
+//class AnimationLayer
+//{
+//public:
+//	char  pad_0000[20];
+//	// These should also be present in the padding, don't see the use for it though
+//	//float	m_flLayerAnimtime;
+//	//float	m_flLayerFadeOuttime;
+//	uint32_t m_nOrder; //0x0014
+//	uint32_t m_nSequence; //0x0018
+//	float_t m_flPrevCycle; //0x001C
+//	float_t m_flWeight; //0x0020
+//	float_t m_flWeightDeltaRate; //0x0024
+//	float_t m_flPlaybackRate; //0x0028
+//	float_t m_flCycle; //0x002C
+//	void *m_pOwner; //0x0030 // player's thisptr
+//	char  pad_0038[4]; //0x0034
+//}; //Size: 0x0038
 
 class C_BaseEntity : public IClientUnknown, public IClientRenderable, public IClientNetworkable
 {
@@ -62,6 +79,24 @@ public:
 		static SetAbsAnglesFn SetAbsAngles = (SetAbsAnglesFn)Utils::FindSignature(("client_panorama.dll"), "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1 E8");
 
 		SetAbsAngles(this, angles);
+	}
+
+	QAngle C_BaseEntity::GetVAngles()
+	{
+		static auto deadflag = g_pNetvars->GetOffset("DT_BasePlayer", "deadflag");
+		return *(QAngle*)((uintptr_t)this + deadflag + 0x4);
+	}
+
+	void SetVisualAngle(QAngle target)
+	{
+		static int deadflag = g_pNetvars->GetOffset("DT_BasePlayer", "pl", "deadflag");
+		*(QAngle*)((uintptr_t)this + deadflag + 0x4) = target;
+	}
+
+	void SetAngle(QAngle target)
+	{
+		static int m_angEyeAngles = g_pNetvars->GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		*(QAngle*)((uintptr_t)this + m_angEyeAngles) = target;
 	}
 
 	int GetTeam()
@@ -122,6 +157,13 @@ public:
 		return GetValue<QAngle>(m_angEyeAngles);
 	}
 
+
+	float GetLowerbodyYaw()
+	{
+		static int m_flLowerBodyYawTarget = g_pNetvars->GetOffset("DT_CSPlayer", "m_flLowerBodyYawTarget");
+		return GetValue<float>(m_flLowerBodyYawTarget);
+	}
+
     int GetTickBase()
     {
         static int m_nTickBase = g_pNetvars->GetOffset("DT_BasePlayer", "localdata", "m_nTickBase");
@@ -139,6 +181,13 @@ public:
         static int m_vecViewOffset = g_pNetvars->GetOffset("DT_BasePlayer", "localdata", "m_vecViewOffset[0]");
         return GetValue<Vector>(m_vecViewOffset);
     }
+
+	void SetAngle2(QAngle wantedang)
+	{
+		typedef void(__thiscall* SetAngleFn)(void*, const QAngle &);
+		static SetAngleFn SetAngle2 = reinterpret_cast<SetAngleFn>(Utils::FindSignature("client_panorama.dll", "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1"));
+		SetAngle2(this, wantedang);
+	}
 
 	Vector GetBonePos(int i)
 	{
@@ -161,17 +210,30 @@ public:
 		return setuped_bones;
 	}
 
+	//int C_BaseEntity::GetNumAnimOverlays()
+	//{
+	//	return *(int*)((DWORD)this + 0x297C);
+	//}
+
+	//AnimationLayer *C_BaseEntity::GetAnimOverlays()
+	//{
+	//	// to find offset: use 9/12/17 dll
+	//	// sig: 55 8B EC 51 53 8B 5D 08 33 C0
+	//	return *(AnimationLayer**)((DWORD)this + 10608);
+	//}
+
+	//AnimationLayer *C_BaseEntity::GetAnimOverlay(int i)
+	//{
+	//	if (i < 15)
+	//		return &GetAnimOverlays()[i];
+	//	return nullptr;
+	//}
+
 	QAngle GetPunchAngles()
 	{
 		//static int m_viewPunchAngle = g_pNetvars->GetOffset("DT_CSPlayer", "m_viewPunchAngle");
 		//return GetValue<QAngle>(m_viewPunchAngle);
 		return *(QAngle*)((DWORD)this + 0x302C);
-	}
-
-	QAngle &GetVAngles()
-	{
-		static auto deadflag = g_pNetvars->GetOffset("DT_BasePlayer", "deadflag");
-		return GetValue<QAngle>(deadflag + 0x4);
 	}
 
 	bool C_BaseEntity::IsBehindSmoke(C_BaseEntity* localPlayer) {

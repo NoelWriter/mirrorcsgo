@@ -78,6 +78,9 @@
     <ClCompile Include="Mirror\Features\DamageIndicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Mirror\Features\Resolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Antario\Menu.h">
@@ -240,6 +243,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mirror\Features\DamageIndicator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Features\Resolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -17,6 +17,8 @@ public:
 
 	void CrouchExploit();
 
+	void Fakelag();
+
 	void HandleColors();
 
 	Color GetColor(int colorSelected);
@@ -88,7 +90,7 @@ private:
 	int selectedGreenPrev;
 	int selectedBluePrev;
 
-	
+	int32_t choked = 0;
 };
 
 extern Misc g_Misc;

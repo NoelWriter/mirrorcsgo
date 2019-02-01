@@ -23,6 +23,8 @@
 #define HITGROUP_RIGHTLEG    7
 #define HITGROUP_GEAR        10
 #define PI 3.14159265358979323846f
+#define TIME_TO_TICKS(dt) ((int)( 0.5f + (float)(dt) / g_pGlobalVars->intervalPerTick))
+
 void SinCos2634(float a, float* s, float*c)
 {
 	*s = sin(a);
@@ -840,7 +842,20 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		}
 	}
 
+	pCmd->tick_count = FixTickcount(pEnt);
+
 	return true;
+}
+
+int RageWall::FixTickcount(C_BaseEntity * player)
+{
+	int idx = player->EntIndex();
+
+	auto cl_interp_ratio = g_pCVar->FindVar("cl_interp_ratio");
+	auto cl_updaterate = g_pCVar->FindVar("cl_updaterate");
+	int lerpTicks = TIME_TO_TICKS(cl_interp_ratio->GetFloat() / cl_updaterate->GetFloat());
+
+	return TIME_TO_TICKS(player->GetSimulationTime()) + lerpTicks;
 }
 
 float RandomFloat(float min, float max)

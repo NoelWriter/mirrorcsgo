@@ -98,6 +98,9 @@ void Misc::doMisc()
 
 	if (g_Settings.bMiscCrouchExploit)
 		this->CrouchExploit();
+
+	if (g_Settings.bMiscFakelag)
+		this->Fakelag();
 }
 
 void Misc::DoThirdPerson() {
@@ -148,6 +151,32 @@ void Misc::CrouchExploit() {
 		}
 	}*/
 }
+
+void Misc::Fakelag()
+{
+	if (!g_Settings.bMiscFakelag)
+		return;
+
+	int choke = std::min<int>(false ? static_cast<int>(std::ceilf(64 / (g::pLocalEntity->GetVelocity().Length2D() * g_pGlobalVars->intervalPerTick))) : g_Settings.bMiscFakelagAmount, 14);
+
+	if (g::pCmd->buttons & IN_ATTACK)
+		return;
+	if (g::pLocalEntity->GetVelocity().Length2D() < 3.0f)
+		return;
+	//if (g_Options.misc_fakelag_activation_type == 2 && (g_LocalPlayer->m_fFlags() & FL_ONGROUND))
+	//	return;
+
+	if (false && choke > 13)
+		return;
+
+	g::bSendPacket = (choked > choke);
+
+	if (g::bSendPacket)
+		choked = 0;
+	else
+		choked++;
+}
+
 
 void Misc::HandleColors() {
 

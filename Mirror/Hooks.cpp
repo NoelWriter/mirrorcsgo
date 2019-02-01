@@ -49,7 +49,7 @@ void Hooks::Init()
     g_Hooks.pSurfaceHook			->Hook(vtable_indexes::lockCursor,			Hooks::LockCursor);
 	g_Hooks.pRenderViewHook			->Hook(vtable_indexes::sceneend,			Hooks::SceneEnd);
 	g_Hooks.pModelRenderHook		->Hook(vtable_indexes::drawmodelexecute,	Hooks::DrawModelExecute);
-	//g_Hooks.pClientHook				->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify);
+	g_Hooks.pClientHook				->Hook(vtable_indexes::framestagenotify,	Hooks::FrameStageNotify);
 	//g_Hooks.pClientModeHook			->Hook(vtable_indexes::overrideView,		Hooks::OverrideView); 
 	g_Hooks.pConvarHook				->Hook(vtable_indexes::getboolsvcheats,		Hooks::GetBool_SVCheats_h);
 
@@ -70,7 +70,7 @@ void Hooks::Restore()
         g_Hooks.pSurfaceHook->Unhook(vtable_indexes::lockCursor);
 		g_Hooks.pRenderViewHook->Unhook(vtable_indexes::sceneend);
 		g_Hooks.pModelRenderHook->Unhook(vtable_indexes::drawmodelexecute);
-		g_Hooks.pClientModeHook->Unhook(vtable_indexes::framestagenotify);
+		g_Hooks.pClientHook->Unhook(vtable_indexes::framestagenotify);
 		g_Hooks.pClientModeHook->Unhook(vtable_indexes::overrideView);
 		g_Hooks.pConvarHook->Unhook(vtable_indexes::getboolsvcheats);
 
@@ -107,6 +107,9 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	g::pVisualAngles = QAngle(0, 0, 0);
 	g::pThirdperson = false;
 
+	uintptr_t *framePtr;
+	__asm mov framePtr, ebp;
+
 	g_Misc.doMisc();
 
 	QAngle wish_angle = pCmd->viewangles;
@@ -123,6 +126,8 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	}
     engine_prediction::EndEnginePred();
 
+	*(bool*)(*framePtr - 0x1C) = g::bSendPacket;
+
 	g::pVisualAngles = pCmd->viewangles;
 
 	pCmd->forwardmove = g_Misc.clamp(pCmd->forwardmove, -450.f, 450.f);
@@ -131,12 +136,13 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	pCmd->viewangles.Normalize();
 	
 
+
     return false;
 }
 
 void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 {
-	static auto ofunc = g_Hooks.pClientModeHook->GetOriginal<FrameStageNotify_t>(vtable_indexes::framestagenotify);
+	static auto ofunc = g_Hooks.pClientHook->GetOriginal<FrameStageNotify_t>(vtable_indexes::framestagenotify);
 
 	if (!g::pLocalEntity)
 	{
@@ -144,16 +150,17 @@ void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 		return;
 	}
 
+	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+	{
+		g_Resolver.DoResolver();
+	}
+
 	if (Stage == ClientFrameStage_t::FRAME_RENDER_START)
 	{
-
-		if (g_Settings.bMiscThirdPerson)
-			g_Misc.DoThirdPerson();
-
 		if (g::pLocalEntity->IsAlive())
 		{
-			//if (g::pThirdperson)
-				//g::pLocalEntity->GetVAngles() = g::pVisualAngles;
+			if (g_pInput->m_fCameraInThirdPerson)
+				g::pLocalEntity->SetVisualAngle(QAngle(g::pVisualAngles.x, g::pVisualAngles.y, 0));
 		}
 	}
 
@@ -294,6 +301,7 @@ void __fastcall Hooks::SceneEnd(void *pEcx, void *pEdx)
 			}
 			g_pMdlRender->ForcedMaterialOverride(nullptr);
 		}
+
 		return oSceneEnd(pEcx);
 	}
 	return oSceneEnd(pEcx);

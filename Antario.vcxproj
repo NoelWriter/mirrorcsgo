@@ -102,6 +102,7 @@
     <ClCompile Include="Mirror\Features\DamageIndicator.cpp" />
     <ClCompile Include="Mirror\Features\EnginePrediction.cpp" />
     <ClCompile Include="Mirror\Features\Misc.cpp" />
+    <ClCompile Include="Mirror\Features\Resolver.cpp" />
     <ClCompile Include="Mirror\GUI\GUI.cpp" />
     <ClCompile Include="Mirror\Hooks.cpp" />
     <ClCompile Include="Mirror\DLLMain.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="Mirror\Features\EnginePrediction.h" />
     <ClInclude Include="Mirror\Features\Features.h" />
     <ClInclude Include="Mirror\Features\Misc.h" />
+    <ClInclude Include="Mirror\Features\Resolver.h" />
     <ClInclude Include="Mirror\GUI\GUI.h" />
     <ClInclude Include="Mirror\Hooks.h" />
     <ClInclude Include="Antario\Menu.h" />

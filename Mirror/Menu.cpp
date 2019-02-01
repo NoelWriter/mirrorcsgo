@@ -61,6 +61,8 @@ void MenuMain::Initialize()
 				sectAntiAim->AddCheckBox("Enable", &g_Settings.bRagebotAAEnable);
 				sectAntiAim->AddDummy(3);
 				sectAntiAim->AddCombo("Yaw", &g_Settings.bRagebotAAYawReal, std::vector<std::string>{ "Off", "Backwards", "Backwards Cycle", "Freestanding" });
+				sectAntiAim->AddDummy(3);
+				sectAntiAim->AddCheckBox("Resolver", &g_Settings.bRagebotResolver);
 			}
 		}
 		mainWindow->AddChild(tab2);
@@ -102,6 +104,8 @@ void MenuMain::Initialize()
 				sectMisc->AddCheckBox("Bhop", &g_Settings.bBhopEnabled);
 				sectMisc->AddCheckBox("Third Person", &g_Settings.bMiscThirdPerson);
 				sectMisc->AddCheckBox("Crouch Exploit", &g_Settings.bMiscCrouchExploit);
+				sectMisc->AddCheckBox("Fakelag", &g_Settings.bMiscFakelag);
+				sectMisc->AddSlider("Fakelag Amount", &g_Settings.bMiscFakelagAmount, 1, 10);
 			}
 			auto sectMisc2 = tab4->AddSection("Misc", 1.f);
 			{
