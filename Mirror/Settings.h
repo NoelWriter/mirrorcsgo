@@ -89,6 +89,7 @@ public:
 	bool  bRagebotAAEnable		= false;
 	int   bRagebotAAYawReal		= 0;
 	bool  bRagebotResolver		= false;
+	bool  bRagebotBaimKill		= false;
 };
 
 extern Settings g_Settings;

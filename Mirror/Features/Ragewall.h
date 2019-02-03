@@ -51,6 +51,8 @@ public:
 
 	Vector CalculateBestPoint(C_BaseEntity * player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[]);
 
+	bool IsEntityMoving(C_BaseEntity * player);
+
 	void AutoStop();
 
 	int prev_aimtarget = NULL;

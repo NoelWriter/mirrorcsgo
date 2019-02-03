@@ -924,7 +924,7 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 	mstudiohitboxset_t *set = studioHdr->GetHitboxSet(0);
 	Vector vecOutput = Vector(0,0,0);
 
-	if (BestHitPoint(player, prioritized, minDmg, set, matrix, vecOutput) > minDmg && onlyPrioritized)
+	if (BestHitPoint(player, prioritized, minDmg, set, matrix, vecOutput) > minDmg)
 	{
 		return vecOutput;
 	}
@@ -952,7 +952,7 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 			HITBOX_RIGHT_CALF,
 			HITBOX_LEFT_FOOT,
 			HITBOX_RIGHT_FOOT
-		};
+		};	
 
 		int loopSize = ARRAYSIZE(hitboxesLoop);
 
@@ -963,16 +963,23 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 			if (!flCurDamage)
 				continue;
 
-			if (flCurDamage > flHigherDamage)
+			if (flCurDamage > flHigherDamage || (flCurDamage > player->GetHealth() && g_Settings.bRagebotBaimKill))
 			{
 				flHigherDamage = flCurDamage;
 				vecOutput = vecCurVec;
-				if (static_cast<int32_t>(flHigherDamage) >= player->GetHealth())
+
+				if (static_cast<int32_t>(flHigherDamage) >= player->GetHealth() && (hitboxesLoop[i] != HITBOX_HEAD && g_Settings.bRagebotBaimKill))
 					break;
 			}
 		}
+
 		return vecOutput;
 	}
+}
+
+bool RageWall::IsEntityMoving(C_BaseEntity *player)
+{
+	return (player->GetVelocity().Length2D() > 0.1f && player->GetFlags() & FL_ONGROUND);
 }
 
 void RageWall::AutoStop()
@@ -1000,12 +1007,7 @@ void RageWall::AutoStop()
 		prevFMove = curFMove;
 		prevSMove = curSMove;
 	}
-	else if (inStop && maxWeaponSpeed)
-	{
-		g::pCmd->forwardmove = -prevFMove;
-		g::pCmd->sidemove = -prevSMove;
-	}
-	else if (inStop && !maxWeaponSpeed)
+	else if (inStop)
 	{
 		g::pCmd->forwardmove = 0;
 		g::pCmd->sidemove = 0;
