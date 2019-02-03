@@ -106,10 +106,10 @@ void Misc::doMisc()
 void Misc::DoThirdPerson() {
 	if (g_pEngine->IsInGame())
 	{
+		QAngle viewangle;
+		g_pEngine->GetViewAngles(viewangle);
 		if (g::pLocalEntity->IsAlive() && g_Settings.bMiscThirdPerson)
 		{
-			QAngle viewangle;
-			g_pEngine->GetViewAngles(viewangle);
 			if (!g::pThirdperson)
 			{
 				g_pInput->m_fCameraInThirdPerson = true;
@@ -121,6 +121,7 @@ void Misc::DoThirdPerson() {
 		else
 		{
 			g_pInput->m_fCameraInThirdPerson = false;
+			g_pInput->m_vecCameraOffset = Vector(viewangle.x, viewangle.y, 0.f);
 			g::pThirdperson = false;
 		}
 	}

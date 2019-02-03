@@ -90,7 +90,7 @@ void MenuMain::Initialize()
 			auto sectWorld = tab3->AddSection("World", 1.f);
 			{
 				sectWorld->AddDummy(3);
-				sectWorld->AddCheckBox("Radar", &g_Settings.bEspWRadar);
+				//sectWorld->AddCheckBox("Radar", &g_Settings.bEspWRadar);
 				sectWorld->AddCheckBox("Grenade Helper", &g_Settings.bEspWGrenade);
 				sectWorld->AddButton("Update Map", updateGrenadeMap);
 			}

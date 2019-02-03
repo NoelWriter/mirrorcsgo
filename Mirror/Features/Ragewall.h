@@ -55,5 +55,6 @@ public:
 
 	int prev_aimtarget = NULL;
 	int switchTick = 0;
+	bool inStop = false;
 };
 extern RageWall g_RageWall;

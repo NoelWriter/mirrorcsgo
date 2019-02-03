@@ -779,7 +779,7 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 			{
 				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA)) {
 					pCmd->buttons |= IN_ATTACK;
-					switchTick = 0;
+					inStop = false;
 				}
 				else
 					AutoStop();
@@ -790,6 +790,10 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 				pCmd->buttons |= IN_ATTACK;
 			}
 		}
+	}
+	else
+	{
+		inStop = false;
 	}
 
 	//pCmd->tick_count = FixTickcount(pEnt);
@@ -976,25 +980,34 @@ void RageWall::AutoStop()
 	if (!g_Settings.bRagebotAutostop)
 		return;
 
-	if (g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3) && switchTick < 5)
+	float curFMove = g::pCmd->forwardmove;
+	float curSMove = g::pCmd->sidemove;
+
+	static float prevFMove;
+	static float prevSMove;
+
+	bool maxWeaponSpeed = g::pLocalEntity->GetVelocity().Length() > (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3);
+
+	if (!inStop && maxWeaponSpeed)
 	{
+		inStop = true;
+
 		g::pCmd->buttons |= IN_WALK;
-		g::pCmd->forwardmove = -g::pCmd->forwardmove;
-		g::pCmd->sidemove = -g::pCmd->sidemove;
+		g::pCmd->forwardmove = -curFMove;
+		g::pCmd->sidemove = -curSMove;
 		g::pCmd->upmove = 0;
 
-		switchTick++;
+		prevFMove = curFMove;
+		prevSMove = curSMove;
 	}
-	else if (switchTick >= 5 && switchTick < 15 || g::pLocalEntity->GetVelocity().Length() < (g::pActiveWeapon->GetCSWpnData()->flMaxPlayerSpeed / 3))
+	else if (inStop && maxWeaponSpeed)
+	{
+		g::pCmd->forwardmove = -prevFMove;
+		g::pCmd->sidemove = -prevSMove;
+	}
+	else if (inStop && !maxWeaponSpeed)
 	{
 		g::pCmd->forwardmove = 0;
 		g::pCmd->sidemove = 0;
-
-		switchTick++;
 	}
-	else
-	{
-		switchTick = 0;
-	}
-
 }
