@@ -172,6 +172,11 @@ void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 			g::pLocalEntity->SetVisualAngle(QAngle(g::pVisualAngles.x, g::pVisualAngles.y, 0));
 	}
 
+	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_END)
+	{
+		backtracking->RageBackTrack();
+	}
+
 	ofunc(Stage);
 }
 

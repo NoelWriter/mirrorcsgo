@@ -9,27 +9,28 @@
 #include "..\SDK\Studio.hpp"
 #include "..\SDK\IEngineTrace.hpp"
 #include "..\SDK\IVModelInfoClient.hpp"
+#include <array>
 
 // class predefinition
 class C_BaseCombatWeapon;
 
-//class AnimationLayer
-//{
-//public:
-//	char  pad_0000[20];
-//	// These should also be present in the padding, don't see the use for it though
-//	//float	m_flLayerAnimtime;
-//	//float	m_flLayerFadeOuttime;
-//	uint32_t m_nOrder; //0x0014
-//	uint32_t m_nSequence; //0x0018
-//	float_t m_flPrevCycle; //0x001C
-//	float_t m_flWeight; //0x0020
-//	float_t m_flWeightDeltaRate; //0x0024
-//	float_t m_flPlaybackRate; //0x0028
-//	float_t m_flCycle; //0x002C
-//	void *m_pOwner; //0x0030 // player's thisptr
-//	char  pad_0038[4]; //0x0034
-//}; //Size: 0x0038
+class AnimationLayer
+{
+public:
+	char  pad_0000[20];
+	// These should also be present in the padding, don't see the use for it though
+	//float	m_flLayerAnimtime;
+	//float	m_flLayerFadeOuttime;
+	uint32_t m_nOrder; //0x0014
+	uint32_t m_nSequence; //0x0018
+	float_t m_flPrevCycle; //0x001C
+	float_t m_flWeight; //0x0020
+	float_t m_flWeightDeltaRate; //0x0024
+	float_t m_flPlaybackRate; //0x0028
+	float_t m_flCycle; //0x002C
+	void *m_pOwner; //0x0030 // player's thisptr
+	char  pad_0038[4]; //0x0034
+}; //Size: 0x0038
 
 class C_BaseEntity : public IClientUnknown, public IClientRenderable, public IClientNetworkable
 {
@@ -81,6 +82,41 @@ public:
 		SetAbsAngles(this, angles);
 	}
 
+	std::array<float, 24> &C_BaseEntity::m_flPoseParameter()
+	{
+		static int _m_flPoseParameter = g_pNetvars->GetOffset("DT_BaseAnimating", "m_flPoseParameter");
+		return *(std::array<float, 24>*)((uintptr_t)this + _m_flPoseParameter);
+	}
+
+	int C_BaseEntity::GetNumAnimOverlays()
+	{
+		return *(int*)((DWORD)this + 0x298C);
+	}
+
+	AnimationLayer *C_BaseEntity::GetAnimOverlays()
+	{
+		// to find offset: use 9/12/17 dll
+		// sig: 55 8B EC 51 53 8B 5D 08 33 C0
+		return *(AnimationLayer**)((DWORD)this + 0x2980);
+	}
+
+	AnimationLayer *C_BaseEntity::GetAnimOverlay(int i)
+	{
+		if (i < 15)
+			return &GetAnimOverlays()[i];
+		return nullptr;
+	}
+
+	
+	void C_BaseEntity::InvalidateBoneCache()
+	{
+		DWORD invalidateBoneCache = (DWORD)Utils::FindSignature(("client_panorama.dll"), "80 3D ? ? ? ? ? 74 16 A1 ? ? ? ? 48 C7 81");
+		unsigned long g_iModelBoneCounter = **(unsigned long**)(invalidateBoneCache + 10);
+		*(unsigned int*)((DWORD)this + 0x2924) = 0xFF7FFFFF; // m_flLastBoneSetupTime = -FLT_MAX;
+		*(unsigned int*)((DWORD)this + 0x2690) = (g_iModelBoneCounter - 1); // m_iMostRecentModelBoneCounter = g_iModelBoneCounter - 1;
+	}
+
+
 	QAngle C_BaseEntity::GetVAngles()
 	{
 		static auto deadflag = g_pNetvars->GetOffset("DT_BasePlayer", "deadflag");
@@ -110,6 +146,12 @@ public:
         static int m_fFlags = g_pNetvars->GetOffset("DT_BasePlayer", "m_fFlags");
         return GetValue<EntityFlags>(m_fFlags);
     }
+
+	EntityFlags* GetFlags2()
+	{
+		static int m_fFlags = g_pNetvars->GetOffset("DT_BasePlayer", "m_fFlags");
+		return (EntityFlags*)((uintptr_t)this + m_fFlags);
+	}
 
 	const Vector C_BaseEntity::WorldSpaceCenter()
 	{
@@ -209,25 +251,6 @@ public:
 
 		return setuped_bones;
 	}
-
-	//int C_BaseEntity::GetNumAnimOverlays()
-	//{
-	//	return *(int*)((DWORD)this + 0x297C);
-	//}
-
-	//AnimationLayer *C_BaseEntity::GetAnimOverlays()
-	//{
-	//	// to find offset: use 9/12/17 dll
-	//	// sig: 55 8B EC 51 53 8B 5D 08 33 C0
-	//	return *(AnimationLayer**)((DWORD)this + 10608);
-	//}
-
-	//AnimationLayer *C_BaseEntity::GetAnimOverlay(int i)
-	//{
-	//	if (i < 15)
-	//		return &GetAnimOverlays()[i];
-	//	return nullptr;
-	//}
 
 	QAngle GetPunchAngles()
 	{

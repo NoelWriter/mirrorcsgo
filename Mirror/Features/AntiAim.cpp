@@ -19,11 +19,6 @@ AntiAim g_AntiAim;
 
 void AntiAim::doAntiAim(CUserCmd *pCmd)
 {
-	PVOID pebp;
-	__asm mov pebp, ebp;
-	bool* pbSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
-	bool& bSendPacket = *pbSendPacket;
-	g::bSendPacket = bSendPacket;
 
 	if (!g_Settings.bRagebotAAEnable || !g_Settings.bRagebotAAYawReal)
 		return;
@@ -36,6 +31,12 @@ void AntiAim::doAntiAim(CUserCmd *pCmd)
 	if (!weapon)
 		return;
 
+	if (weapon->GetItemDefinitionIndex() == WEAPON_KNIFE)
+		return;
+
+	if (g::pLocalEntity->IsImmune())
+		return;
+
 	if (weapon->GetItemDefinitionIndex() == WEAPON_REVOLVER)
 	{
 		if (pCmd->buttons & IN_ATTACK2)
@@ -45,7 +46,9 @@ void AntiAim::doAntiAim(CUserCmd *pCmd)
 		//	return;
 	}
 	else if (weapon->isGrenade())
-			return;
+	{
+		return;
+	}
 	else
 	{
 		if (weapon->GetCSWpnData()->weapon_type() == 0 && ((pCmd->buttons & IN_ATTACK) || (pCmd->buttons & IN_ATTACK2)))

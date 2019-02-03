@@ -717,11 +717,10 @@ int realHitboxSpot2[] = { 0, 1, 2, 3 };
 bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 {
 	int i = pEnt->EntIndex();
-	//auto firedShots = g::pLocalEntity->f;
 
 	int iHitbox = 0;
 
-	Vector vecTarget;
+	Vector vecTarget = Vector(0.0000f, 0.0000f, 0.0000f);
 
 	C_BaseCombatWeapon* pWeapon = g::pActiveWeapon;
 
@@ -731,11 +730,10 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 	float flServerTime = g::pLocalEntity->GetTickBase() * g_pGlobalVars->intervalPerTick;
 	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(pCmd->buttons & IN_RELOAD);
 
-	// Disgusting ass codes, can't think of a cleaner way now though. FIX ME.
 	bool LagComp_Hitchanced = false;
-	if (!g_Settings.bRagebotAutowall)
+	if (g_Settings.bRagebotBacktrack)
 	{
-		vecTarget = pEnt->GetBonePos(8);
+		backtracking->RunTicks(pEnt, pCmd, vecTarget, LagComp_Hitchanced);
 	}
 	else
 	{

@@ -164,8 +164,6 @@ void Misc::Fakelag()
 		return;
 	if (g::pLocalEntity->GetVelocity().Length2D() < 3.0f)
 		return;
-	//if (g_Options.misc_fakelag_activation_type == 2 && (g_LocalPlayer->m_fFlags() & FL_ONGROUND))
-	//	return;
 
 	if (false && choke > 13)
 		return;
