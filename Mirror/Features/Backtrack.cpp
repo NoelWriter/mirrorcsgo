@@ -225,7 +225,7 @@ void BackTrack::RageBackTrack()
 	}
 }
 
-void BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_point, bool &hitchanced)
+bool BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_point, bool &hitchanced)
 {
 	if (StartLagCompensation(target))
 	{
@@ -282,6 +282,11 @@ void BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_po
 		}
 		FinishLagCompensation(target);
 		ProcessCMD(target->EntIndex(), g::pCmd);
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -345,7 +350,8 @@ bool BackTrack::StartLagCompensation(C_BaseEntity *player)
 		if (it.m_iPriority >= 1 /*&& !(it.m_nFlags & FL_ONGROUND) && it.m_vecVelocity.Length2D() > 150*/)
 			backtrack_records.emplace_back(it);
 	}
-	backtrack_records.emplace_back(newest_record);
+	if (newest_record.m_iPriority != 0)
+		backtrack_records.emplace_back(newest_record);
 
 	std::sort(backtrack_records.begin(), backtrack_records.end(), [](LagRecord const &a, LagRecord const &b) { return a.m_iPriority > b.m_iPriority; });
 	return backtrack_records.size() > 0;
@@ -355,7 +361,7 @@ void BackTrack::FinishLagCompensation(C_BaseEntity *player)
 {
 	int idx = player->EntIndex();
 
-	player->InvalidateBoneCache();
+	//player->InvalidateBoneCache();
 
 	player->GetCollideable()->OBBMins() = m_RestoreLagRecord[idx].second.m_vecMins;
 	player->GetCollideable()->OBBMaxs() = m_RestoreLagRecord[idx].second.m_vecMax;
@@ -422,7 +428,7 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 	}
 	else
 	{
-		player->InvalidateBoneCache();
+		//player->InvalidateBoneCache();
 
 		player->GetCollideable()->OBBMins() = recentLR.m_vecMins;
 		player->GetCollideable()->OBBMaxs() = recentLR.m_vecMax;

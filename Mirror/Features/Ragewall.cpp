@@ -731,11 +731,17 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(pCmd->buttons & IN_RELOAD);
 
 	bool btHitChance = false;
+	bool doNormal = false;
 	if (g_Settings.bRagebotBacktrack)
 	{
-		backtracking->RunTicks(pEnt, pCmd, vecTarget, btHitChance);
+		if (!backtracking->RunTicks(pEnt, pCmd, vecTarget, btHitChance))
+		{
+			doNormal = true;
+		}
+
 	}
-	else
+
+	if (!g_Settings.bRagebotBacktrack || doNormal)
 	{
 		matrix3x4_t matrix[128];
 		if (!pEnt->SetupBones2(matrix, 128, 256, pEnt->GetSimulationTime()))
@@ -936,7 +942,6 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 		{
 			HITBOX_HEAD,
 			HITBOX_PELVIS,
-			HITBOX_CHEST,
 		};
 
 		int loopSize = ARRAYSIZE(hitboxesLoop);

@@ -89,9 +89,7 @@ public:
 	void legitBackTrack(CUserCmd * cmd);
 	void RageBackTrack();
 
-	void RunTicks(C_BaseEntity * target, CUserCmd * usercmd, Vector & aim_point);
-
-	void RunTicks(C_BaseEntity * target, CUserCmd * usercmd, Vector & aim_point, bool & hitchanced);
+	bool RunTicks(C_BaseEntity * target, CUserCmd * usercmd, Vector & aim_point, bool & hitchanced);
 
 	int GetPriorityLevel(C_BaseEntity * player, LagRecord * lag_record);
 
