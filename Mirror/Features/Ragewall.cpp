@@ -153,7 +153,7 @@ void VectorTransform(const Vector& in1, const matrix3x4_t& in2, Vector& out)
 	out[2] = in1.Dot(in2[2]) + in2[2][3];
 }
 
-float RageWall::BestHitPoint(C_BaseEntity *player, int prioritized, float minDmg, mstudiohitboxset_t *hitset, matrix3x4_t matrix[], Vector &vecOut)
+float RageWall::BestHitPoint(C_BaseEntity *player, int prioritized, float minDmg, mstudiohitboxset_t *hitset, matrix3x4_t matrix[], Vector &vecOut, bool fromBacktrack)
 {
 	mstudiobbox_t *hitbox = hitset->pHitbox(prioritized);
 	if (!hitbox)
@@ -187,7 +187,7 @@ float RageWall::BestHitPoint(C_BaseEntity *player, int prioritized, float minDmg
 	const float POINT_SCALE = 0.5f;
 
 	//TODO: Add multipoint feature.
-	if (true)
+	if (!fromBacktrack)
 	{
 		switch (prioritized)
 		{
@@ -730,10 +730,10 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 	float flServerTime = g::pLocalEntity->GetTickBase() * g_pGlobalVars->intervalPerTick;
 	bool canShoot = !(pWeapon->GetNextPrimaryAttack() > flServerTime) && !(pCmd->buttons & IN_RELOAD);
 
-	bool LagComp_Hitchanced = false;
+	bool btHitChance = false;
 	if (g_Settings.bRagebotBacktrack)
 	{
-		backtracking->RunTicks(pEnt, pCmd, vecTarget, LagComp_Hitchanced);
+		backtracking->RunTicks(pEnt, pCmd, vecTarget, btHitChance);
 	}
 	else
 	{
@@ -741,7 +741,7 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		if (!pEnt->SetupBones2(matrix, 128, 256, pEnt->GetSimulationTime()))
 			return false;
 
-		vecTarget = CalculateBestPoint(pEnt, iHitbox, g_Settings.bRagebotMinDamage, false, matrix);
+		vecTarget = CalculateBestPoint(pEnt, iHitbox, g_Settings.bRagebotMinDamage, false, matrix, false);
 	}
 
 	// Invalid target/no hitable points at all.
@@ -775,7 +775,7 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		{
 			if (g_Settings.bRagebotHitchance)
 			{
-				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA)) {
+				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA) || (btHitChance && g_Settings.bRagebotBacktrack)) {
 					pCmd->buttons |= IN_ATTACK;
 					inStop = false;
 				}
@@ -916,14 +916,48 @@ bool RageWall::CheckTarget(int i)
 	return true;
 }
 
-Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[])
+Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[], bool fromBacktrack)
 {
 	studiohdr_t *studioHdr = g_pMdlInfo->GetStudiomodel2(player->GetModel());
 	mstudiohitboxset_t *set = studioHdr->GetHitboxSet(0);
 	Vector vecOutput = Vector(0,0,0);
 
-	if (BestHitPoint(player, prioritized, minDmg, set, matrix, vecOutput) > minDmg)
+	if (BestHitPoint(player, prioritized, minDmg, set, matrix, vecOutput, fromBacktrack) > minDmg && onlyPrioritized)
 	{
+		return vecOutput;
+	}
+	else if (fromBacktrack) // Maybe scan the entire body while looping over backtracking ticks
+	{
+		float flHigherDamage = 0.f;
+
+		Vector vecCurVec;
+
+		static int hitboxesLoop[] =
+		{
+			HITBOX_HEAD,
+			HITBOX_PELVIS,
+			HITBOX_CHEST,
+		};
+
+		int loopSize = ARRAYSIZE(hitboxesLoop);
+
+		for (int i = 0; i < loopSize; ++i)
+		{
+			float flCurDamage = BestHitPoint(player, hitboxesLoop[i], minDmg, set, matrix, vecCurVec, fromBacktrack);
+
+			if (!flCurDamage)
+				continue;
+
+			if (flCurDamage > flHigherDamage || (flCurDamage > player->GetHealth() && g_Settings.bRagebotBaimKill))
+			{
+				flHigherDamage = flCurDamage;
+				vecOutput = vecCurVec;
+
+				if (static_cast<int32_t>(flHigherDamage) >= player->GetHealth() && (hitboxesLoop[i] != HITBOX_HEAD && g_Settings.bRagebotBaimKill))
+					break;
+			}
+		}
+
 		return vecOutput;
 	}
 	else
@@ -956,7 +990,7 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 
 		for (int i = 0; i < loopSize; ++i)
 		{
-			float flCurDamage = BestHitPoint(player, hitboxesLoop[i], minDmg, set, matrix, vecCurVec);
+			float flCurDamage = BestHitPoint(player, hitboxesLoop[i], minDmg, set, matrix, vecCurVec, false);
 
 			if (!flCurDamage)
 				continue;

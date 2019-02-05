@@ -7,8 +7,10 @@
 #include "..\SDK\CGlobalVarsBase.h"
 #include "..\SDK\IClientEntity.h"
 #include "Ragewall.h"
+#include "..\Utils\ICvar.h"
 
 #define TIME_TO_TICKS( dt )	( ( int )( 0.5f + ( float )( dt ) / g_pGlobalVars->intervalPerTick ) )
+#define TICKS_TO_TIME(t) (g_pGlobalVars->intervalPerTick * (t) )
 
 BackTrack* backtracking = new BackTrack();
 backtrackData l_SavedTicks[64][25]; //support for 128tick servers
@@ -18,9 +20,41 @@ rageBacktrackData r_SavedTicks[64][25]; //support for 128tick servers
 
 bool BackTrack::IsTickValid(int tick)
 {
-	int delta = latest_tick - tick;
-	float deltaTime = delta * g_pGlobalVars->intervalPerTick;
-	return (fabs(deltaTime) <= 0.2f);
+	static auto sv_maxunlag = g_pCVar->FindVar("sv_maxunlag");
+
+	INetChannelInfo *nci = g_pEngine->GetNetChannelInfo();
+	if (!nci)
+		return false;
+
+	float correct = clamp(nci->GetLatency(FLOW_OUTGOING) + GetLerpTime(), 0.f, sv_maxunlag->GetFloat());
+
+	float deltaTime = correct - (g_pGlobalVars->curtime - TICKS_TO_TIME(tick));
+
+	return fabsf(deltaTime) < 0.2f;
+}
+
+float BackTrack::GetLerpTime()
+{
+	int ud_rate = g_pCVar->FindVar("cl_updaterate")->GetInt();
+	ConVar *min_ud_rate = g_pCVar->FindVar("sv_minupdaterate");
+	ConVar *max_ud_rate = g_pCVar->FindVar("sv_maxupdaterate");
+
+	if (min_ud_rate && max_ud_rate)
+		ud_rate = max_ud_rate->GetInt();
+
+	float ratio = g_pCVar->FindVar("cl_interp_ratio")->GetFloat();
+
+	if (ratio == 0)
+		ratio = 1.0f;
+
+	float lerp = g_pCVar->FindVar("cl_interp")->GetFloat();
+	ConVar *c_min_ratio = g_pCVar->FindVar("sv_client_min_interp_ratio");
+	ConVar *c_max_ratio = g_pCVar->FindVar("sv_client_max_interp_ratio");
+
+	if (c_min_ratio && c_max_ratio && c_min_ratio->GetFloat() != 1)
+		ratio = clamp(ratio, c_min_ratio->GetFloat(), c_max_ratio->GetFloat());
+
+	return max(lerp, (ratio / ud_rate));
 }
 
 void BackTrack::legitBackTrack(CUserCmd* cmd)
@@ -110,7 +144,7 @@ void LagRecord::SaveRecord(C_BaseEntity *player)
 	m_nFlags = player->GetFlags();
 	m_vecVelocity = player->GetVelocity();
 
-	int layerCount = player->GetNumAnimOverlays();
+	/*int layerCount = player->GetNumAnimOverlays();
 	for (int i = 0; i < layerCount; i++)
 	{
 		AnimationLayer *currentLayer = player->GetAnimOverlay(i);
@@ -118,7 +152,7 @@ void LagRecord::SaveRecord(C_BaseEntity *player)
 		m_LayerRecords[i].m_nSequence = currentLayer->m_nSequence;
 		m_LayerRecords[i].m_flWeight = currentLayer->m_flWeight;
 		m_LayerRecords[i].m_flCycle = currentLayer->m_flCycle;
-	}
+	}*/
 
 	m_arrflPoseParameters = player->m_flPoseParameter();
 	m_iTickCount = g_pGlobalVars->tickcount;
@@ -220,9 +254,18 @@ void BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_po
 				iter->m_bMatrixBuilt = true;
 			}
 
-			aim_point = g_RageWall.CalculateBestPoint(target, 0, g_Settings.bRagebotMinDamage, false, iter->matrix);
+			aim_point = g_RageWall.CalculateBestPoint(target, 0, g_Settings.bRagebotMinDamage, false, iter->matrix, true);
 
-			if (!aim_point.IsValid())
+			if (aim_point.x != aim_point.x)
+				aim_point.x = 0.f;
+
+			if (aim_point.y != aim_point.y)
+				aim_point.y = 0.f;
+
+			if (aim_point.z != aim_point.z)
+				aim_point.z = 0.f;
+
+			if (!aim_point.IsValid() || (aim_point.x >= -0.0001f && aim_point.x <= 0.0001f) || (aim_point.y >= -0.0001f && aim_point.y <= 0.0001f))
 			{
 				FinishLagCompensation(target);
 				iter->m_bNoGoodSpots = true;
@@ -232,7 +275,7 @@ void BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_po
 
 			QAngle aimAngle = Utils::CalcAngle(g::pLocalEntity->GetEyePosition(), aim_point) - g::pLocalEntity->GetPunchAngles() * 2.f;
 
-			hitchanced = g_RageWall.HitChance(aimAngle, target, g_Settings.bRagebotHitchance);
+			hitchanced = g_RageWall.HitChance(aimAngle, target, g_Settings.bRagebotHitchanceA);
 
 			this->current_record[target->EntIndex()] = *iter;
 			break;
@@ -267,7 +310,7 @@ void BackTrack::ProcessCMD(int iTargetIdx, CUserCmd *usercmd)
 	if (!IsTickValid(TIME_TO_TICKS(recentLR.m_flSimulationTime)))
 		usercmd->tick_count = TIME_TO_TICKS(g_pEntityList->GetClientEntity(iTargetIdx)->GetSimulationTime());
 	else
-		usercmd->tick_count = TIME_TO_TICKS(recentLR.m_flSimulationTime);
+		usercmd->tick_count = TIME_TO_TICKS(recentLR.m_flSimulationTime + GetLerpTime());
 }
 
 
@@ -293,11 +336,16 @@ bool BackTrack::StartLagCompensation(C_BaseEntity *player)
 	auto& m_LagRecords = this->m_LagRecord[player->EntIndex()];
 	m_RestoreLagRecord[player->EntIndex()].second.SaveRecord(player);
 
+	LagRecord newest_record = LagRecord();
 	for (auto it : m_LagRecords)
 	{
-		if (it.m_iPriority >= 1 || (it.m_vecVelocity.Length2D() > 10.f))
+		if (it.m_flSimulationTime > newest_record.m_flSimulationTime)
+			newest_record = it;
+
+		if (it.m_iPriority >= 1 /*&& !(it.m_nFlags & FL_ONGROUND) && it.m_vecVelocity.Length2D() > 150*/)
 			backtrack_records.emplace_back(it);
 	}
+	backtrack_records.emplace_back(newest_record);
 
 	std::sort(backtrack_records.begin(), backtrack_records.end(), [](LagRecord const &a, LagRecord const &b) { return a.m_iPriority > b.m_iPriority; });
 	return backtrack_records.size() > 0;
@@ -317,7 +365,7 @@ void BackTrack::FinishLagCompensation(C_BaseEntity *player)
 
 	//player->GetFlags2() = m_RestoreLagRecord[idx].second.m_nFlags;
 
-	int layerCount = player->GetNumAnimOverlays();
+	/*int layerCount = player->GetNumAnimOverlays();
 	for (int i = 0; i < layerCount; ++i)
 	{
 		AnimationLayer *currentLayer = player->GetAnimOverlay(i);
@@ -325,7 +373,7 @@ void BackTrack::FinishLagCompensation(C_BaseEntity *player)
 		currentLayer->m_nSequence = m_RestoreLagRecord[idx].second.m_LayerRecords[i].m_nSequence;
 		currentLayer->m_flWeight = m_RestoreLagRecord[idx].second.m_LayerRecords[i].m_flWeight;
 		currentLayer->m_flCycle = m_RestoreLagRecord[idx].second.m_LayerRecords[i].m_flCycle;
-	}
+	}*/
 
 	player->m_flPoseParameter() = m_RestoreLagRecord[idx].second.m_arrflPoseParameters;
 }
@@ -384,7 +432,7 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 
 		//player->m_fFlags() = recentLR.m_nFlags;
 
-		int layerCount = player->GetNumAnimOverlays();
+		/*int layerCount = player->GetNumAnimOverlays();
 		for (int i = 0; i < layerCount; ++i)
 		{
 			AnimationLayer *currentLayer = player->GetAnimOverlay(i);
@@ -392,7 +440,7 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 			currentLayer->m_nSequence = recentLR.m_LayerRecords[i].m_nSequence;
 			currentLayer->m_flWeight = recentLR.m_LayerRecords[i].m_flWeight;
 			currentLayer->m_flCycle = recentLR.m_LayerRecords[i].m_flCycle;
-		}
+		}*/
 
 		player->m_flPoseParameter() = recentLR.m_arrflPoseParameters;
 
@@ -424,6 +472,18 @@ bool BackTrack::CheckTarget(int i)
 		return false;
 
 	return true;
+}
+
+template<class T, class U>
+T BackTrack::clamp(T in, U low, U high)
+{
+	if (in <= low)
+		return low;
+
+	if (in >= high)
+		return high;
+
+	return in;
 }
 
 int realHitboxSpot[] = { 0, 1, 2, 3 };

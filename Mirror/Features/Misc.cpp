@@ -127,30 +127,41 @@ void Misc::DoThirdPerson() {
 	}
 }
 
-bool switchPacket = false;
+bool crouch = false;
 void Misc::CrouchExploit() {
 
 	g::pCmd->buttons |= IN_BULLRUSH;
-	/*PVOID pebp;
-	__asm mov pebp, ebp;
-	bool* pbSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
-	bool& bSendPacket = *pbSendPacket;
 
-	
+	static bool doCrouch = true;
+	static int iCurCrouchSwitch = 0;
+	static bool doOnce = false;
 
-	bool do_once = false, _do;
-
-	if (g::pCmd->buttons & IN_DUCK)
+	if (doOnce && !(GetAsyncKeyState(VK_SHIFT)))
 	{
-		switchPacket != switchPacket;
-		if (!switchPacket) {
-			bSendPacket = true;
+		doOnce = false;
+		iCurCrouchSwitch = 0;
+		doCrouch = true;
+	}
+
+	if (GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_SHIFT)) 
+	{
+		// Switch our crouching position every 3 ticks
+		if (iCurCrouchSwitch == 3) {
+			iCurCrouchSwitch = 0;
+			doCrouch = !doCrouch;
+		}
+		iCurCrouchSwitch++;
+
+		// Determine if we have to crouch
+		if (doCrouch) {
+			g::pCmd->buttons |= IN_DUCK;
+			g::bSendPacket = true;
 		}
 		else {
-			bSendPacket = false;
 			g::pCmd->buttons &= ~IN_DUCK;
+			g::bSendPacket = false;
 		}
-	}*/
+	}
 }
 
 void Misc::Fakelag()

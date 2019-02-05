@@ -83,9 +83,13 @@ class BackTrack
 	int latest_tick;
 	bool IsTickValid(int tick);
 
+	float GetLerpTime();
+
 public:
 	void legitBackTrack(CUserCmd * cmd);
 	void RageBackTrack();
+
+	void RunTicks(C_BaseEntity * target, CUserCmd * usercmd, Vector & aim_point);
 
 	void RunTicks(C_BaseEntity * target, CUserCmd * usercmd, Vector & aim_point, bool & hitchanced);
 
@@ -113,6 +117,8 @@ public:
 		for (int i = 0; i < 64; i++)
 			m_LagRecord[i].clear();
 	}
+	template<class T, class U>
+	T clamp(T in, U low, U high);
 };
 
 inline Vector angle_vector(Vector meme)

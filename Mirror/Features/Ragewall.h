@@ -19,7 +19,7 @@ struct FireBulletData
 class RageWall
 {
 public:
-	float BestHitPoint(C_BaseEntity * player, int prioritized, float minDmg, mstudiohitboxset_t * hitset, matrix3x4_t matrix[], Vector & vecOut);
+	float BestHitPoint(C_BaseEntity * player, int prioritized, float minDmg, mstudiohitboxset_t * hitset, matrix3x4_t matrix[], Vector & vecOut, bool fromBacktrack);
 
 	float GetDamageVec(const Vector & vecPoint, C_BaseEntity * player, int hitbox);
 
@@ -43,13 +43,11 @@ public:
 
 	bool TargetSpecificEnt(C_BaseEntity * pEnt, CUserCmd * pCmd);
 
-	int FixTickcount(C_BaseEntity * player);
-
 	bool HitChance(QAngle angles, C_BaseEntity * ent, float chance);
 
 	bool CheckTarget(int i);
 
-	Vector CalculateBestPoint(C_BaseEntity * player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[]);
+	Vector CalculateBestPoint(C_BaseEntity * player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[], bool fromBacktrack);
 
 	bool IsEntityMoving(C_BaseEntity * player);
 
