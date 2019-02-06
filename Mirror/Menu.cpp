@@ -62,6 +62,7 @@ void MenuMain::Initialize()
 				sectAntiAim->AddDummy(3);
 				sectAntiAim->AddCombo("Yaw", &g_Settings.bRagebotAAYawReal, std::vector<std::string>{ "Off", "Backwards", "Backwards Cycle", "Freestanding" });
 				sectAntiAim->AddDummy(3);
+				sectAntiAim->AddCheckBox("Desync", &g_Settings.bRagebotAADesync);
 				sectAntiAim->AddCheckBox("Resolver", &g_Settings.bRagebotResolver);
 				sectAntiAim->AddCheckBox("Baim To Kill", &g_Settings.bRagebotBaimKill);
 			}
@@ -91,7 +92,7 @@ void MenuMain::Initialize()
 			auto sectWorld = tab3->AddSection("World", 1.f);
 			{
 				sectWorld->AddDummy(3);
-				//sectWorld->AddCheckBox("Radar", &g_Settings.bEspWRadar);
+				//sectWorld->AddCheckBox("Radar", &g_Settings.bEspWRadar); //WARNING POSSIBLE VAC BAN
 				sectWorld->AddCheckBox("Grenade Helper", &g_Settings.bEspWGrenade);
 				sectWorld->AddButton("Update Map", updateGrenadeMap);
 			}

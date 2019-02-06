@@ -25,13 +25,12 @@ void Hooks::Init()
 
     Utils::Log("Hooking in progress...");
 
-
     // D3D Device pointer
     const uintptr_t d3dDevice = **reinterpret_cast<uintptr_t**>(Utils::FindSignature("shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C") + 1);
 
-    if (g_Hooks.hCSGOWindow)        // Hook WNDProc to capture mouse / keyboard input
+	// Hook WNDProc to capture mouse / keyboard input
+    if (g_Hooks.hCSGOWindow)        
         g_Hooks.pOriginalWNDProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(g_Hooks.hCSGOWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(Hooks::WndProc)));
-
 
     // VMTHooks
     g_Hooks.pD3DDevice9Hook			= std::make_unique<VMTHook>(reinterpret_cast<void*>(d3dDevice));

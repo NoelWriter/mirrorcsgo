@@ -63,7 +63,8 @@ void AntiAim::doAntiAim(CUserCmd *pCmd)
 	pCmd->viewangles.x = GetPitch();
 	pCmd->viewangles.y = GetYaw();
 
-	if (pCmd->command_number % 3) pCmd->viewangles.y += 50;
+	// Implement desync here
+	//if (pCmd->command_number % 3) pCmd->viewangles.y += 50;
 }
 
 float AntiAim::GetPitch()

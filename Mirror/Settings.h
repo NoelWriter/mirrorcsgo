@@ -88,6 +88,7 @@ public:
 
 	bool  bRagebotAAEnable		= false;
 	int   bRagebotAAYawReal		= 0;
+	bool  bRagebotAADesync		= false;
 	bool  bRagebotResolver		= false;
 	bool  bRagebotBaimKill		= false;
 };

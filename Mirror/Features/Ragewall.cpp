@@ -672,7 +672,9 @@ void RageWall::ClipTraceToPlayers(const Vector &vecAbsStart, const Vector &vecAb
 void RageWall::TargetEntities(CUserCmd* pCmd)
 {
 	auto weap = g::pActiveWeapon;
-	static C_BaseCombatWeapon *oldWeapon; // what is this for?
+	static C_BaseCombatWeapon *oldWeapon; 
+
+	// Release mousebutton when we switch weapon.
 	if (weap != oldWeapon)
 	{
 		oldWeapon = weap;
@@ -694,6 +696,7 @@ void RageWall::TargetEntities(CUserCmd* pCmd)
 		return;
 	}
 
+	// Try to target our previous target first, so we don't have to check all entities in our clientlist
 	if (prev_aimtarget && CheckTarget(prev_aimtarget))
 	{
 		if (TargetSpecificEnt(C_BaseEntity::GetEntityByIndex(prev_aimtarget), pCmd))
@@ -702,7 +705,6 @@ void RageWall::TargetEntities(CUserCmd* pCmd)
 
 	for (int i = 1; i < g_pEngine->GetMaxClients(); i++)
 	{
-
 		if (!CheckTarget(i))
 			continue;
 
@@ -738,7 +740,6 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		{
 			doNormal = true;
 		}
-
 	}
 
 	if (!g_Settings.bRagebotBacktrack || doNormal)
@@ -773,15 +774,20 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 	if (!g_Settings.bRagebotSilent)
 		g_pEngine->SetViewAngles(new_aim_angles);
 
+	bool canHit = false;
+	if (g_Settings.bRagebotHitchance)
+		canHit = HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA) || (btHitChance && g_Settings.bRagebotBacktrack);
+
 	if (canShoot)
 	{
+		// Set our previous aim target so we don't have to check player variables again
 		prev_aimtarget = pEnt->EntIndex();
 
 		if (g_Settings.bRagebotAutoFire)
 		{
 			if (g_Settings.bRagebotHitchance)
 			{
-				if (HitChance(new_aim_angles, pEnt, g_Settings.bRagebotHitchanceA) || (btHitChance && g_Settings.bRagebotBacktrack)) {
+				if (canHit) {
 					pCmd->buttons |= IN_ATTACK;
 					inStop = false;
 				}
@@ -796,25 +802,10 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 		}
 	}
 	else
-	{
 		inStop = false;
-	}
-
-	//pCmd->tick_count = FixTickcount(pEnt);
 
 	return true;
 }
-
-//int RageWall::FixTickcount(C_BaseEntity * player)
-//{
-//	int idx = player->EntIndex();
-//
-//	auto cl_interp_ratio = g_pCVar->FindVar("cl_interp_ratio");
-//	auto cl_updaterate = g_pCVar->FindVar("cl_updaterate");
-//	int lerpTicks = TIME_TO_TICKS(cl_interp_ratio->GetFloat() / cl_updaterate->GetFloat());
-//
-//	return TIME_TO_TICKS(player->GetSimulationTime()) + lerpTicks;
-//}
 
 float RandomFloat(float min, float max)
 {
@@ -932,20 +923,19 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 	{
 		return vecOutput;
 	}
-	else if (fromBacktrack) // Maybe scan the entire body while looping over backtracking ticks
+	else if (fromBacktrack) // Maybe not hit scan the entire body while looping over backtracking ticks
 	{
 		float flHigherDamage = 0.f;
-
 		Vector vecCurVec;
 
 		static int hitboxesLoop[] =
 		{
 			HITBOX_HEAD,
 			HITBOX_PELVIS,
+			HITBOX_CHEST
 		};
 
 		int loopSize = ARRAYSIZE(hitboxesLoop);
-
 		for (int i = 0; i < loopSize; ++i)
 		{
 			float flCurDamage = BestHitPoint(player, hitboxesLoop[i], minDmg, set, matrix, vecCurVec, fromBacktrack);
@@ -962,7 +952,6 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 					break;
 			}
 		}
-
 		return vecOutput;
 	}
 	else
@@ -972,7 +961,7 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 		Vector vecCurVec;
 
 		// why not use all the hitboxes then
-		//static Hitboxes hitboxesLoop;
+		// static Hitboxes hitboxesLoop;
 		static int hitboxesLoop[] =
 		{
 			HITBOX_HEAD,
