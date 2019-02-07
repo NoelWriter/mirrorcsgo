@@ -5,6 +5,7 @@
 #include "Features\Features.h"
 #include "SDK\IVModelRender.hpp"
 #include "Utils/ICvar.h"
+#include "SDK/Definitions.h"
 
 Misc     g_Misc;
 Hooks    g_Hooks;
@@ -125,7 +126,7 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	{
 		// Running features in engine prediction
 		g_Aimbot.DoAimbot(pCmd);
-		backtracking->legitBackTrack(pCmd);
+		g_backtrack.legitBackTrack(pCmd);
 		g_AntiAim.doAntiAim(pCmd);
 		g_Misc.FixMovement(pCmd, wish_angle);
 	}
@@ -161,6 +162,39 @@ void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 
 	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START)
 	{
+		for (int i = 0; i < g_pEngine->GetMaxClients(); i++)
+		{
+			C_BaseEntity *player = g_pEntityList->GetClientEntity(i);
+
+			if (!player || player == nullptr)
+				continue;
+
+			if (player == g::pLocalEntity)
+				continue;
+
+			if (player->GetTeam() == g::pLocalEntity->GetTeam())
+				continue;
+
+			if (player->IsDormant())
+				continue;
+
+			if (player->IsImmune())
+				continue;
+
+			if (!player->IsAlive())
+				continue;
+
+			VarMapping_t *map = player->VarMapping();
+			if (map)
+			{
+				for (int j = 0; j < map->m_nInterpolatedEntries; j++)
+				{
+					map->m_Entries[j].m_bNeedsToInterpolate = !g_Settings.bRagebotBacktrack;
+				}
+			}
+		}
+		
+
 		if (g_pEngine->IsConnected())
 			g_Resolver.DoResolver();
 	}
@@ -173,7 +207,7 @@ void __stdcall Hooks::FrameStageNotify(ClientFrameStage_t Stage)
 
 	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_END)
 	{
-		backtracking->RageBackTrack();
+		g_backtrack.RageBackTrack();
 	}
 
 	ofunc(Stage);

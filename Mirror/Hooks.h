@@ -45,6 +45,7 @@ public:
 	static void		__stdcall	OverrideView(CViewSetup * pSetup);
 	static void		__stdcall	DrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld);
 	static void		__stdcall	FrameStageNotify(ClientFrameStage_t stage);
+	static bool		__fastcall	SetupBones_h(void * ECX, void * EDX, matrix3x4_t * pBoneToWorldOut, int nMaxBones, int boneMask, float currentTime);
 	static bool		__fastcall	GetBool_SVCheats_h(PVOID pConVar, int edx);
 
 private:

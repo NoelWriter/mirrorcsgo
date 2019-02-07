@@ -7,7 +7,10 @@
 DamageIndicators g_pDamageIndicator;
 void DamageIndicators::paint() {
 
-	if (!g::pLocalEntity || !g::pLocalEntity->IsAlive() || !g_pEngine->IsInGame() || g::pLocalEntity->IsDormant() )
+	if (!g::pLocalEntity || !g_pEngine->IsInGame())
+		return;
+
+	if (g::pLocalEntity->IsDormant() || !g::pLocalEntity->IsAlive())
 		return;
 
 	auto m_local = g::pLocalEntity;

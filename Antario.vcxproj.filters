@@ -81,6 +81,15 @@
     <ClCompile Include="Mirror\Features\Ragewall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Mirror\Utils\UtlBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mirror\Utils\UtlString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mirror\Utils\characterset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Antario\Menu.h">
@@ -246,6 +255,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mirror\Features\Ragewall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Utils\UtlBuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Utils\UtlMemory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Utils\UtlString.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Utils\UtlVector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Utils\characterset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mirror\Utils\platform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

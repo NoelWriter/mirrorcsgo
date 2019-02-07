@@ -184,7 +184,7 @@ float RageWall::BestHitPoint(C_BaseEntity *player, int prioritized, float minDmg
 	Vector top = Vector(0, 0, 1);
 	Vector bot = Vector(0, 0, -1);
 
-	const float POINT_SCALE = 0.5f;
+	const float POINT_SCALE = 0.65f;
 
 	//TODO: Add multipoint feature.
 	if (!fromBacktrack)
@@ -736,19 +736,20 @@ bool RageWall::TargetSpecificEnt(C_BaseEntity* pEnt, CUserCmd* pCmd)
 	bool doNormal = false;
 	if (g_Settings.bRagebotBacktrack)
 	{
-		if (!backtracking->RunTicks(pEnt, pCmd, vecTarget, btHitChance))
+		if (!g_backtrack.RunTicks(pEnt, pCmd, vecTarget, btHitChance))
 		{
 			doNormal = true;
 		}
 	}
 
+	float returnDamage;
 	if (!g_Settings.bRagebotBacktrack || doNormal)
 	{
 		matrix3x4_t matrix[128];
 		if (!pEnt->SetupBones2(matrix, 128, 256, pEnt->GetSimulationTime()))
 			return false;
 
-		vecTarget = CalculateBestPoint(pEnt, iHitbox, g_Settings.bRagebotMinDamage, false, matrix, false);
+		vecTarget = CalculateBestPoint(pEnt, iHitbox, g_Settings.bRagebotMinDamage, false, matrix, false, returnDamage);
 	}
 
 	// Invalid target/no hitable points at all.
@@ -913,7 +914,7 @@ bool RageWall::CheckTarget(int i)
 	return true;
 }
 
-Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[], bool fromBacktrack)
+Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[], bool fromBacktrack, float &returnDamage)
 {
 	studiohdr_t *studioHdr = g_pMdlInfo->GetStudiomodel2(player->GetModel());
 	mstudiohitboxset_t *set = studioHdr->GetHitboxSet(0);
@@ -932,7 +933,9 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 		{
 			HITBOX_HEAD,
 			HITBOX_PELVIS,
-			HITBOX_CHEST
+			HITBOX_UPPER_CHEST,
+			HITBOX_CHEST,
+			HITBOX_NECK,
 		};
 
 		int loopSize = ARRAYSIZE(hitboxesLoop);
@@ -952,6 +955,7 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 					break;
 			}
 		}
+		returnDamage = flHigherDamage;
 		return vecOutput;
 	}
 	else
@@ -994,11 +998,12 @@ Vector RageWall::CalculateBestPoint(C_BaseEntity *player, int prioritized, float
 				flHigherDamage = flCurDamage;
 				vecOutput = vecCurVec;
 
-				if (static_cast<int32_t>(flHigherDamage) >= player->GetHealth() && (hitboxesLoop[i] != HITBOX_HEAD && g_Settings.bRagebotBaimKill))
+				if (static_cast<int32_t>(flHigherDamage) >= player->GetHealth() && ((hitboxesLoop[i] != HITBOX_HEAD && g_Settings.bRagebotBaimKill)))
 					break;
 			}
 		}
 
+		returnDamage = flHigherDamage;
 		return vecOutput;
 	}
 }

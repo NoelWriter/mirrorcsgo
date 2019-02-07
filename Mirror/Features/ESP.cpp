@@ -4,9 +4,14 @@
 #include "..\SDK\PlayerInfo.h"
 #include "..\SDK\IVModelInfoClient.hpp"
 #include "..\Utils\CGrenadeAPI.h"
+#include "..\Utils\GlobalVars.h"
+#include "..\SDK\CGlobalVarsBase.h"
 #include "Misc.h"
+#include "Backtrack.h"
 
 ESP g_ESP;
+
+#define TIME_TO_TICKS( dt )	( ( int )( 0.5f + ( float )( dt ) / g_pGlobalVars->intervalPerTick ) )
 
 void ESP::RenderBox(C_BaseEntity* pEnt)
 {
@@ -119,6 +124,37 @@ void ESP::RenderWeaponName(C_BaseEntity* pEnt)
 	g_Render.String(int(vecScreenOrigin.x), int(vecScreenOrigin.y), CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
                     (localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
                     g_Fonts.pFontTahoma10.get(), strWeaponName.c_str());
+}
+
+void ESP::RenderbtBoneESP(C_BaseEntity* player)
+{
+	if (!g_Settings.bRagebotBacktrack)
+		return;
+
+	auto records = g_backtrack.m_LagRecord[player->EntIndex()];
+	if (records.size() < 2)
+		return;
+
+	Vector previous_screenpos;
+	for (auto record = records.begin(); record != records.end(); record++)
+	{
+		if (!g_backtrack.IsTickValid(TIME_TO_TICKS(record->m_flSimulationTime)))
+			continue;
+
+		Vector screen_pos;
+		if (!Utils::WorldToScreen(record->m_vecHeadSpot, screen_pos))
+			continue;
+
+		if (previous_screenpos.IsValid())
+		{
+			if (*record == g_backtrack.m_RestoreLagRecord[player->EntIndex()].first)
+				g_Render.Line(screen_pos.x, screen_pos.y, previous_screenpos.x, previous_screenpos.y, Color(255, 255, 0, 255));//g_Render.DrawSetColor(Color(255, 255, 0, 255));
+			else
+				g_Render.Line(screen_pos.x, screen_pos.y, previous_screenpos.x, previous_screenpos.y, Color(255, 255, 255, 255));
+		}
+
+		previous_screenpos = screen_pos;
+	}
 }
 
 void ESP::DrawBoneESP(C_BaseEntity* pBaseEntity, int it)
@@ -283,7 +319,8 @@ void ESP::Render()
 			this->Radar(pPlayerEntity);
 
 		if (g_Settings.bEspPBones)
-			this->DrawBoneESP(pPlayerEntity, it);
+			this->RenderbtBoneESP(pPlayerEntity);
+			//this->DrawBoneESP(pPlayerEntity, it);
 
 		if (g_Settings.bEspPHealth)
 			this->DrawHealth(pPlayerEntity);

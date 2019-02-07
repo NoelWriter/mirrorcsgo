@@ -81,11 +81,10 @@ struct LagRecord
 class BackTrack
 {
 	int latest_tick;
-	bool IsTickValid(int tick);
-
 	float GetLerpTime();
 
 public:
+	bool IsTickValid(int tick);
 	void legitBackTrack(CUserCmd * cmd);
 	void RageBackTrack();
 
@@ -155,7 +154,6 @@ struct rageBacktrackData {
 	float velocity;
 };
 
-
 extern backtrackData l_SavedTicks[64][25];
 extern rageBacktrackData r_SavedTicks[64][25];
-extern BackTrack* backtracking;
+extern BackTrack g_backtrack;

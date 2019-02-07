@@ -109,12 +109,15 @@
     <ClCompile Include="Mirror\Menu.cpp" />
     <ClCompile Include="Mirror\Settings.cpp" />
     <ClCompile Include="Mirror\Utils\CGrenadeAPI.cpp" />
+    <ClCompile Include="Mirror\Utils\characterset.cpp" />
     <ClCompile Include="Mirror\Utils\D3DFont.cpp" />
     <ClCompile Include="Mirror\Utils\DrawManager.cpp" />
     <ClCompile Include="Mirror\Utils\GlobalVars.cpp" />
     <ClCompile Include="Mirror\Utils\Interfaces.cpp" />
     <ClCompile Include="Mirror\Utils\NetvarManager.cpp" />
     <ClCompile Include="Mirror\Features\ESP.cpp" />
+    <ClCompile Include="Mirror\Utils\UtlBuffer.cpp" />
+    <ClCompile Include="Mirror\Utils\UtlString.cpp" />
     <ClCompile Include="Mirror\Utils\Vector4D.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +145,7 @@
     <ClInclude Include="Mirror\SDK\IVModelRender.hpp" />
     <ClInclude Include="Mirror\SDK\Studio.hpp" />
     <ClInclude Include="Mirror\Utils\CGrenadeAPI.h" />
+    <ClInclude Include="Mirror\Utils\characterset.hpp" />
     <ClInclude Include="Mirror\Utils\Color.h" />
     <ClInclude Include="Mirror\SDK\CPrediction.h" />
     <ClInclude Include="Mirror\SDK\Definitions.h" />
@@ -168,10 +172,15 @@
     <ClInclude Include="Mirror\SDK\Vector.h" />
     <ClInclude Include="Mirror\SDK\VMatrix.h" />
     <ClInclude Include="Mirror\Utils\NetvarManager.h" />
+    <ClInclude Include="Mirror\Utils\platform.hpp" />
     <ClInclude Include="Mirror\Utils\SPoint.h" />
     <ClInclude Include="Mirror\Utils\SRect.h" />
     <ClInclude Include="Mirror\Utils\Utils.h" />
     <ClInclude Include="Mirror\Features\ESP.h" />
+    <ClInclude Include="Mirror\Utils\UtlBuffer.hpp" />
+    <ClInclude Include="Mirror\Utils\UtlMemory.hpp" />
+    <ClInclude Include="Mirror\Utils\UtlString.hpp" />
+    <ClInclude Include="Mirror\Utils\UtlVector.hpp" />
     <ClInclude Include="Mirror\Utils\Vector4D.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

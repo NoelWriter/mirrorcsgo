@@ -12,18 +12,18 @@
 #define TIME_TO_TICKS( dt )	( ( int )( 0.5f + ( float )( dt ) / g_pGlobalVars->intervalPerTick ) )
 #define TICKS_TO_TIME(t) (g_pGlobalVars->intervalPerTick * (t) )
 
-BackTrack* backtracking = new BackTrack();
+BackTrack g_backtrack;
 backtrackData l_SavedTicks[64][25]; //support for 128tick servers
 rageBacktrackData r_SavedTicks[64][25]; //support for 128tick servers
 
 
-
 bool BackTrack::IsTickValid(int tick)
 {
+	INetChannelInfo *nci = g_pEngine->GetNetChannelInfo();
+
 	static auto sv_maxunlag = g_pCVar->FindVar("sv_maxunlag");
 
-	INetChannelInfo *nci = g_pEngine->GetNetChannelInfo();
-	if (!nci)
+	if (!nci || !sv_maxunlag)
 		return false;
 
 	float correct = clamp(nci->GetLatency(FLOW_OUTGOING) + GetLerpTime(), 0.f, sv_maxunlag->GetFloat());
@@ -144,7 +144,7 @@ void LagRecord::SaveRecord(C_BaseEntity *player)
 	m_nFlags = player->GetFlags();
 	m_vecVelocity = player->GetVelocity();
 
-	/*int layerCount = player->GetNumAnimOverlays();
+	int layerCount = player->GetNumAnimOverlays();
 	for (int i = 0; i < layerCount; i++)
 	{
 		AnimationLayer *currentLayer = player->GetAnimOverlay(i);
@@ -152,14 +152,12 @@ void LagRecord::SaveRecord(C_BaseEntity *player)
 		m_LayerRecords[i].m_nSequence = currentLayer->m_nSequence;
 		m_LayerRecords[i].m_flWeight = currentLayer->m_flWeight;
 		m_LayerRecords[i].m_flCycle = currentLayer->m_flCycle;
-	}*/
-
+	}
 	m_arrflPoseParameters = player->m_flPoseParameter();
+
 	m_iTickCount = g_pGlobalVars->tickcount;
 	m_vecHeadSpot = player->GetBonePos(8);
 }
-
-
 
 void BackTrack::RageBackTrack()
 {
@@ -193,22 +191,24 @@ void BackTrack::RageBackTrack()
 			continue;
 		}
 		
-		LagRecord cur_lagrecord;
-		float curSimtime = player->GetSimulationTime();
+		int32_t ent_index = player->EntIndex();
+		float_t sim_time = player->GetSimulationTime();
 
-		RemoveBadRecords(i, lag_records);
+		LagRecord cur_lagrecord;
+
+		RemoveBadRecords(ent_index, lag_records);
 
 		if (lag_records.size() > 0)
 		{
 			auto &tail = lag_records.back();
 
-			if (tail.m_flSimulationTime == curSimtime)
+			if (tail.m_flSimulationTime == sim_time)
 				continue;
 		}
 
-		cur_lagrecord.SaveRecord(player);
+		cur_lagrecord.SaveRecord(player); // first let's create the record
 
-		if (!lag_records.empty())
+		if (!lag_records.empty()) // apply specific stuff that is needed
 		{
 			auto &temp_lagrecord = lag_records.back();
 			int32_t priority_level = GetPriorityLevel(player, &temp_lagrecord);
@@ -254,24 +254,26 @@ bool BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_po
 				iter->m_bMatrixBuilt = true;
 			}
 
-			aim_point = g_RageWall.CalculateBestPoint(target, 0, g_Settings.bRagebotMinDamage, false, iter->matrix, true);
+			float btReturnDamage = 0;
+			aim_point = g_RageWall.CalculateBestPoint(target, 0, g_Settings.bRagebotMinDamage, false, iter->matrix, true, btReturnDamage);
 
-			if (aim_point.x != aim_point.x)
-				aim_point.x = 0.f;
+			matrix3x4_t matrix[128];
+			if (!target->SetupBones2(matrix, 128, 256, target->GetSimulationTime()))
+				return false;
 
-			if (aim_point.y != aim_point.y)
-				aim_point.y = 0.f;
+			float returnDamage = 0;
+			g_RageWall.CalculateBestPoint(target, 0, g_Settings.bRagebotMinDamage, false, matrix, false, returnDamage);
 
-			if (aim_point.z != aim_point.z)
-				aim_point.z = 0.f;
-
-			if (!aim_point.IsValid() || (aim_point.x >= -0.0001f && aim_point.x <= 0.0001f) || (aim_point.y >= -0.0001f && aim_point.y <= 0.0001f))
+			if (!aim_point.IsValid())
 			{
 				FinishLagCompensation(target);
 				iter->m_bNoGoodSpots = true;
 				iter->m_vecLocalAimspot = g::pLocalEntity->GetEyePosition();
 				continue;
 			}
+
+			if (returnDamage >= btReturnDamage)
+				continue;
 
 			QAngle aimAngle = Utils::CalcAngle(g::pLocalEntity->GetEyePosition(), aim_point) - g::pLocalEntity->GetPunchAngles() * 2.f;
 
@@ -281,7 +283,7 @@ bool BackTrack::RunTicks(C_BaseEntity* target, CUserCmd* usercmd, Vector &aim_po
 			break;
 		}
 		FinishLagCompensation(target);
-		ProcessCMD(target->EntIndex(), g::pCmd);
+		ProcessCMD(target->EntIndex(), usercmd);
 		return true;
 	}
 	else
@@ -300,7 +302,7 @@ int BackTrack::GetPriorityLevel(C_BaseEntity *player, LagRecord* lag_record)
 		priority = 3;
 	}
 
-	if ((player->m_flPoseParameter()[1] > (0.85f) && lag_record->m_arrflPrevPoseParameters[1] <= (0.85f)) || (player->m_flPoseParameter()[1] <= (0.85f) && lag_record->m_arrflPrevPoseParameters[1] > (0.85f)))
+	if (player->GetVelocity().Length2D() > 20.f)
 		priority = 1;
 
 	lag_record->m_flPrevLowerBodyYaw = player->GetLowerbodyYaw();
@@ -313,15 +315,14 @@ void BackTrack::ProcessCMD(int iTargetIdx, CUserCmd *usercmd)
 {
 	LagRecord recentLR = m_RestoreLagRecord[iTargetIdx].first;
 	if (!IsTickValid(TIME_TO_TICKS(recentLR.m_flSimulationTime)))
-		usercmd->tick_count = TIME_TO_TICKS(g_pEntityList->GetClientEntity(iTargetIdx)->GetSimulationTime());
+		usercmd->tick_count = TIME_TO_TICKS(g_pEntityList->GetClientEntity(iTargetIdx)->GetSimulationTime() + GetLerpTime());
 	else
 		usercmd->tick_count = TIME_TO_TICKS(recentLR.m_flSimulationTime + GetLerpTime());
 }
 
-
 void BackTrack::RemoveBadRecords(int Idx, std::deque<LagRecord>& records)
 {
-	auto& m_LagRecords = records;
+	auto& m_LagRecords = records; // Should use rbegin but can't erase
 	for (auto lag_record = m_LagRecords.begin(); lag_record != m_LagRecords.end(); lag_record++)
 	{
 		if (!IsTickValid(TIME_TO_TICKS(lag_record->m_flSimulationTime)))
@@ -337,7 +338,6 @@ void BackTrack::RemoveBadRecords(int Idx, std::deque<LagRecord>& records)
 bool BackTrack::StartLagCompensation(C_BaseEntity *player)
 {
 	backtrack_records.clear();
-
 	auto& m_LagRecords = this->m_LagRecord[player->EntIndex()];
 	m_RestoreLagRecord[player->EntIndex()].second.SaveRecord(player);
 
@@ -346,12 +346,10 @@ bool BackTrack::StartLagCompensation(C_BaseEntity *player)
 	{
 		if (it.m_flSimulationTime > newest_record.m_flSimulationTime)
 			newest_record = it;
-
 		if (it.m_iPriority >= 1 /*&& !(it.m_nFlags & FL_ONGROUND) && it.m_vecVelocity.Length2D() > 150*/)
 			backtrack_records.emplace_back(it);
 	}
-	if (newest_record.m_iPriority != 0)
-		backtrack_records.emplace_back(newest_record);
+	backtrack_records.emplace_back(newest_record);
 
 	std::sort(backtrack_records.begin(), backtrack_records.end(), [](LagRecord const &a, LagRecord const &b) { return a.m_iPriority > b.m_iPriority; });
 	return backtrack_records.size() > 0;
@@ -361,7 +359,7 @@ void BackTrack::FinishLagCompensation(C_BaseEntity *player)
 {
 	int idx = player->EntIndex();
 
-	//player->InvalidateBoneCache();
+	player->InvalidateBoneCache();
 
 	player->GetCollideable()->OBBMins() = m_RestoreLagRecord[idx].second.m_vecMins;
 	player->GetCollideable()->OBBMaxs() = m_RestoreLagRecord[idx].second.m_vecMax;
@@ -371,7 +369,7 @@ void BackTrack::FinishLagCompensation(C_BaseEntity *player)
 
 	//player->GetFlags2() = m_RestoreLagRecord[idx].second.m_nFlags;
 
-	/*int layerCount = player->GetNumAnimOverlays();
+	int layerCount = player->GetNumAnimOverlays();
 	for (int i = 0; i < layerCount; ++i)
 	{
 		AnimationLayer *currentLayer = player->GetAnimOverlay(i);
@@ -379,7 +377,7 @@ void BackTrack::FinishLagCompensation(C_BaseEntity *player)
 		currentLayer->m_nSequence = m_RestoreLagRecord[idx].second.m_LayerRecords[i].m_nSequence;
 		currentLayer->m_flWeight = m_RestoreLagRecord[idx].second.m_LayerRecords[i].m_flWeight;
 		currentLayer->m_flCycle = m_RestoreLagRecord[idx].second.m_LayerRecords[i].m_flCycle;
-	}*/
+	}
 
 	player->m_flPoseParameter() = m_RestoreLagRecord[idx].second.m_arrflPoseParameters;
 }
@@ -409,7 +407,7 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 	if (!IsTickValid(TIME_TO_TICKS(recentLR.m_flSimulationTime)))
 	{
 		backtrack_records.pop_front();
-		return backtrack_records.size() > 0;
+		return backtrack_records.size() > 0; // RET_NO_RECORDS true false
 	}
 
 	// Remove a record...
@@ -424,11 +422,11 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 		// Clear so we don't try to bt shit we can't
 		backtrack_records.clear();
 
-		return true; // Return true so we still try to aimbot.
+		return false; // Return true so we still try to aimbot.
 	}
 	else
 	{
-		//player->InvalidateBoneCache();
+		player->InvalidateBoneCache();
 
 		player->GetCollideable()->OBBMins() = recentLR.m_vecMins;
 		player->GetCollideable()->OBBMaxs() = recentLR.m_vecMax;
@@ -438,7 +436,7 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 
 		//player->m_fFlags() = recentLR.m_nFlags;
 
-		/*int layerCount = player->GetNumAnimOverlays();
+		int layerCount = player->GetNumAnimOverlays();
 		for (int i = 0; i < layerCount; ++i)
 		{
 			AnimationLayer *currentLayer = player->GetAnimOverlay(i);
@@ -446,7 +444,7 @@ bool BackTrack::FindViableRecord(C_BaseEntity *player, LagRecord* record)
 			currentLayer->m_nSequence = recentLR.m_LayerRecords[i].m_nSequence;
 			currentLayer->m_flWeight = recentLR.m_LayerRecords[i].m_flWeight;
 			currentLayer->m_flCycle = recentLR.m_LayerRecords[i].m_flCycle;
-		}*/
+		}
 
 		player->m_flPoseParameter() = recentLR.m_arrflPoseParameters;
 

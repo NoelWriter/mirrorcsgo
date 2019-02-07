@@ -47,7 +47,7 @@ public:
 
 	bool CheckTarget(int i);
 
-	Vector CalculateBestPoint(C_BaseEntity * player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[], bool fromBacktrack);
+	Vector CalculateBestPoint(C_BaseEntity * player, int prioritized, float minDmg, bool onlyPrioritized, matrix3x4_t matrix[], bool fromBacktrack, float & returnDamage);
 
 	bool IsEntityMoving(C_BaseEntity * player);
 

@@ -10,6 +10,7 @@
 #include "..\SDK\IEngineTrace.hpp"
 #include "..\SDK\IVModelInfoClient.hpp"
 #include <array>
+#include "..\Utils\UtlVector.hpp"
 
 // class predefinition
 class C_BaseCombatWeapon;
@@ -31,6 +32,23 @@ public:
 	void *m_pOwner; //0x0030 // player's thisptr
 	char  pad_0038[4]; //0x0034
 }; //Size: 0x0038
+
+class VarMapEntry_t
+{
+public:
+	unsigned short type;
+	unsigned short m_bNeedsToInterpolate;	// Set to false when this var doesn't
+											// need Interpolate() called on it anymore.
+	void *data;
+	void *watcher;
+};
+
+struct VarMapping_t
+{
+	CUtlVector<VarMapEntry_t> m_Entries;
+	int m_nInterpolatedEntries;
+	float m_lastInterpolationTime;
+};
 
 class C_BaseEntity : public IClientUnknown, public IClientRenderable, public IClientNetworkable
 {
@@ -107,15 +125,24 @@ public:
 		return nullptr;
 	}
 
-	
 	void C_BaseEntity::InvalidateBoneCache()
 	{
-		DWORD invalidateBoneCache = (DWORD)Utils::FindSignature(("client_panorama.dll"), "80 3D ? ? ? ? ? 74 16 A1 ? ? ? ? 48 C7 81");
-		unsigned long g_iModelBoneCounter = **(unsigned long**)(invalidateBoneCache + 10);
+		static bool hasSignature = false;
+		static unsigned long g_iModelBoneCounter;
+		if (!hasSignature)
+		{
+			DWORD invalidateBoneCache = (DWORD)Utils::FindSignature(("client_panorama.dll"), "80 3D ? ? ? ? ? 74 16 A1 ? ? ? ? 48 C7 81");
+			g_iModelBoneCounter = **(unsigned long**)(invalidateBoneCache + 10);
+			hasSignature = true;
+		}
 		*(unsigned int*)((DWORD)this + 0x2924) = 0xFF7FFFFF; // m_flLastBoneSetupTime = -FLT_MAX;
 		*(unsigned int*)((DWORD)this + 0x2690) = (g_iModelBoneCounter - 1); // m_iMostRecentModelBoneCounter = g_iModelBoneCounter - 1;
 	}
 
+	VarMapping_t *C_BaseEntity::VarMapping()
+	{
+		return reinterpret_cast<VarMapping_t*>((DWORD)this + 0x24);
+	}
 
 	QAngle C_BaseEntity::GetVAngles()
 	{
