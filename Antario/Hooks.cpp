@@ -12,6 +12,8 @@ Hooks    g_Hooks;
 Settings g_Settings;
 
 
+WeaponInfo_t g_WeaponInfoCopy[255];
+
 void Hooks::Init()
 {
     // Get window handle
@@ -114,6 +116,23 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	// Frame Pointer for bSendPacket
 	uintptr_t *framePtr;
 	__asm mov framePtr, ebp;
+
+    // Create a copy of CSWpnData for every live player in game as it's not always accessable in the present hook
+    for (int it = 1; it <= g_pEngine->GetMaxClients(); ++it)
+    {
+	    C_BaseEntity* pPlayerEntity = g_pEntityList->GetClientEntity(it);
+
+	    if (!pPlayerEntity
+		    || pPlayerEntity->IsDormant()
+		    || !pPlayerEntity->IsAlive())
+		    continue;
+
+	    auto weapon = pPlayerEntity->GetActiveWeapon();
+	    if (!weapon)
+	        continue;
+
+        g_WeaponInfoCopy[it] = *weapon->GetCSWpnData();
+    }
 
 	// MovementFix 
 	QAngle wish_angle = pCmd->viewangles;

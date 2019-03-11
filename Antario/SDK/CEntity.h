@@ -12,6 +12,8 @@
 #include <array>
 #include "..\Utils\UtlVector.hpp"
 
+extern WeaponInfo_t g_WeaponInfoCopy[255];
+
 // class predefinition
 class C_BaseCombatWeapon;
 

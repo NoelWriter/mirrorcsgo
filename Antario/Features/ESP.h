@@ -17,6 +17,7 @@ private:
 	void DrawBoneESP(C_BaseEntity * pBaseEntity, int it);
 	void DrawGrenadeHelper();
 	void DrawHealth(C_BaseEntity * pEnt);
+    void RenderWeaponName(C_BaseEntity* pEnt, int pEntIndex);
 
     int localTeam{};
     Color teamColor{ 195, 240, 100, 255 };
