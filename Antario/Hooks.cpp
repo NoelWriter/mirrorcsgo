@@ -1,4 +1,4 @@
-﻿#include <thread>
+#include <thread>
 #include <intrin.h>
 #include "Hooks.h"
 #include "Utils\Utils.h"
