@@ -1,4 +1,5 @@
 #include "ESP.h"
+#include "..\Settings.h"
 #include "..\Utils\Utils.h"
 #include "..\SDK\IVEngineClient.h"
 #include "..\SDK\PlayerInfo.h"
@@ -83,7 +84,9 @@ void ESP::Radar(C_BaseEntity* pEnt)
 
 void ESP::RenderName(C_BaseEntity* pEnt, int iterator)
 {
-    Vector vecScreenOrigin, vecOrigin = pEnt->GetRenderOrigin();
+    Vector vecScreenOrigin, 
+           vecOrigin = pEnt->GetRenderOrigin();
+
     if (!Utils::WorldToScreen(vecOrigin, vecScreenOrigin))
         return;
 
@@ -96,13 +99,13 @@ void ESP::RenderName(C_BaseEntity* pEnt, int iterator)
     PlayerInfo_t pInfo;
     g_pEngine->GetPlayerInfo(iterator, &pInfo);
 
-    int sx = std::roundf(vecScreenOrigin.x);
-    int sy = std::roundf(vecScreenOrigin.y);
-    int h  = std::roundf(vecScreenBottom.y - vecScreenOrigin.y);
+    const auto sx = int(std::roundf(vecScreenOrigin.x)),
+               sy = int(std::roundf(vecScreenOrigin.y)),
+               h  = int(std::roundf(vecScreenBottom.y - vecScreenOrigin.y));
 
-    g_Render.String(sx, sy + h - 16, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
-                    (localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
-                    g_Fonts.pFontTahoma10.get(), pInfo.szName);
+    g_Render.String(sx, sy + h - 16, FONT_CENTERED_X | FONT_DROPSHADOW,
+                    (localTeam == pEnt->GetTeam()) ? teamColor : enemyColor,
+                    g_Fonts.vecFonts[FONT_TAHOMA_10], pInfo.szName);
 }
 
 void ESP::RenderWeaponName(C_BaseEntity* pEnt, int pEntIndex)
@@ -111,11 +114,11 @@ void ESP::RenderWeaponName(C_BaseEntity* pEnt, int pEntIndex)
     if (!Utils::WorldToScreen(vecOrigin, vecScreenOrigin))
         return;
 
-    WeaponInfo_t weapon = g_WeaponInfoCopy[pEntIndex];
-    if (!weapon.szWeaponName)
+    auto weapon = pEnt->GetActiveWeapon();
+    if (!weapon)
         return;
 
-    std::string strWeaponName = std::string(weapon.szWeaponName);
+    auto strWeaponName = weapon->GetName();
 
     /* Remove "weapon_" prefix */
     strWeaponName.erase(0, 7); 
@@ -123,9 +126,9 @@ void ESP::RenderWeaponName(C_BaseEntity* pEnt, int pEntIndex)
 
     std::transform(strWeaponName.begin(), strWeaponName.end(), strWeaponName.begin(), ::toupper);
 
-	g_Render.String(int(vecScreenOrigin.x), int(vecScreenOrigin.y), CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
-                    (localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
-                    g_Fonts.pFontTahoma10.get(), strWeaponName.c_str());
+    g_Render.String(int(vecScreenOrigin.x), int(vecScreenOrigin.y), FONT_CENTERED_X | FONT_DROPSHADOW,
+                    (localTeam == pEnt->GetTeam()) ? teamColor : enemyColor,
+                    g_Fonts.vecFonts[FONT_TAHOMA_10], strWeaponName.c_str());
 }
 
 void ESP::RenderbtBoneESP(C_BaseEntity* player)
@@ -229,8 +232,8 @@ void ESP::DrawGrenadeHelper() {
 			if (Utils::WorldToScreen((local->GetEyePosition() + vecAngles), vecAngles))
 				g_Render.RectFilled(vecAngles.x - 5, vecAngles.y - 5, vecAngles.x + 5, vecAngles.y + 5, Color::Green());
 
-			g_Render.String(iCenterX, iCenterY + 30, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW, Color::White(), g_Fonts.pFontTahoma10.get(), info.szName.c_str());
-			g_Render.String(iCenterX, iCenterY, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW, Color::White(), g_Fonts.pFontTahoma10.get(), info.szDescription.c_str());
+			g_Render.String(iCenterX, iCenterY + 30, FONT_CENTERED_X | FONT_DROPSHADOW, Color::White(), g_Fonts.vecFonts[FONT_TAHOMA_10], info.szName.c_str());
+			g_Render.String(iCenterX, iCenterY, FONT_CENTERED_X | FONT_DROPSHADOW, Color::White(), g_Fonts.vecFonts[FONT_TAHOMA_10], info.szDescription.c_str());
 
 		}
 		else
@@ -265,9 +268,9 @@ void ESP::DrawHealth(C_BaseEntity* pEnt)
 	int h = std::roundf(vecScreenBottom.y - vecScreenOrigin.y);
 	int w = std::roundf(vecScreenBottom.x - vecScreenOrigin.x);
 
-	g_Render.String(sx + w + 32, sy + h, CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
+	g_Render.String(sx + w + 32, sy + h, FONT_CENTERED_X | FONT_DROPSHADOW,
 		(localTeam == pEnt->GetTeam()) ? g_Misc.cTeam : g_Misc.cEnemy,
-		g_Fonts.pFontTahoma10.get(), std::to_string(pHealth).c_str());
+		g_Fonts.vecFonts[FONT_TAHOMA_10], std::to_string(pHealth).c_str());
 }
 
 void ESP::Render()

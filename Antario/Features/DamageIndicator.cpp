@@ -37,9 +37,9 @@ void DamageIndicators::paint() {
 
 		if (Utils::WorldToScreen(data[i].Position, screen_pos)) {
 			g_Render.String(screen_pos.x, screen_pos.y,
-				CD3DFONT_CENTERED_X | CD3DFONT_DROPSHADOW,
+				FONT_CENTERED_X | FONT_DROPSHADOW,
 				g_Misc.cDIndicator,
-				g_Fonts.pFontTahoma10.get(), std::to_string(data[i].iDamage).c_str());
+				g_Fonts.vecFonts[FONT_TAHOMA_10], std::to_string(data[i].iDamage).c_str());
 		}
 	}
 }

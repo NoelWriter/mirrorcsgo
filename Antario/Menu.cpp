@@ -9,7 +9,7 @@ void updateGrenadeMap() { cGrenade.bUpdateGrenadeInfo(g_pEngine->GetLevelNameSho
 void MenuMain::Initialize()
 {
     /* Create our main window (Could have multiple if you'd create vec. for it)  */
-    auto mainWindow = std::make_shared<Window>("Mirror", SSize(500, 300), g_Fonts.pFontTahoma8, g_Fonts.pFontTahoma8); //Width - Height
+    auto mainWindow = std::make_shared<Window>("Mirror", SSize(500, 300), g_Fonts.vecFonts[FONT_TAHOMA_8], g_Fonts.vecFonts[FONT_TAHOMA_10]); //Width - Height
     {
 		auto tab1 = std::make_shared<Tab>("Aimbot", 1, mainWindow);
 		{

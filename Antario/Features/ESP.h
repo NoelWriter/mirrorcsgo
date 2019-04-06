@@ -1,7 +1,6 @@
 #pragma once
-#include "..\Utils\DrawManager.h"
 #include "..\Utils\GlobalVars.h"
-#include "..\Settings.h"
+#include "..\Utils\DrawManager.h"
 
 
 class ESP
@@ -12,7 +11,6 @@ private:
     void RenderBox(C_BaseEntity* pEnt);
 	void Radar(C_BaseEntity * pEnt);
     void RenderName(C_BaseEntity* pEnt, int iterator);
-    void RenderWeaponName(C_BaseEntity* pEnt);
 	void RenderbtBoneESP(C_BaseEntity * player);
 	void DrawBoneESP(C_BaseEntity * pBaseEntity, int it);
 	void DrawGrenadeHelper();

@@ -33,10 +33,14 @@
     <ClCompile Include="Antario\Features\EnginePrediction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="Antario\Features\ESP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Antario\Features\Misc.cpp">
+=======
+    <ClCompile Include="Antario\Menu.cpp">
+>>>>>>> 92d2837... New freetype font renderer
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Antario\Features\Ragewall.cpp">
@@ -88,6 +92,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Antario\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Antario\Utils\Font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -206,10 +213,14 @@
     <ClInclude Include="Antario\SDK\Studio.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Antario\SDK\Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Antario\SDK\VMatrix.h">
+=======
+    <ClInclude Include="Antario\SDK\IGameEvent.h">
+>>>>>>> 92d2837... New freetype font renderer
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Antario\Utils\CGrenadeAPI.h">
@@ -273,6 +284,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Antario\Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Antario\Utils\Font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
