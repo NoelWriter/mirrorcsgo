@@ -15,79 +15,79 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Mirror\Features\Aimbot.cpp">
+    <ClCompile Include="Antario\Features\Aimbot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\EnginePrediction.cpp">
+    <ClCompile Include="Antario\Features\AntiAim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\ESP.cpp">
+    <ClCompile Include="Antario\Features\Backtrack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\GUI\GUI.cpp">
+    <ClCompile Include="Antario\Features\Chams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\D3DFont.cpp">
+    <ClCompile Include="Antario\Features\DamageIndicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\DrawManager.cpp">
+    <ClCompile Include="Antario\Features\EnginePrediction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\GlobalVars.cpp">
+    <ClCompile Include="Antario\Features\ESP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\Interfaces.cpp">
+    <ClCompile Include="Antario\Features\Misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\NetvarManager.cpp">
+    <ClCompile Include="Antario\Features\Ragewall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\Vector4D.cpp">
+    <ClCompile Include="Antario\Features\Resolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\DLLMain.cpp">
+    <ClCompile Include="Antario\GUI\GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Hooks.cpp">
+    <ClCompile Include="Antario\Utils\CGrenadeAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Menu.cpp">
+    <ClCompile Include="Antario\Utils\characterset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Settings.cpp">
+    <ClCompile Include="Antario\Utils\D3DFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Backtrack.cpp">
+    <ClCompile Include="Antario\Utils\DrawManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\CGrenadeAPI.cpp">
+    <ClCompile Include="Antario\Utils\GlobalVars.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Chams.cpp">
+    <ClCompile Include="Antario\Utils\Interfaces.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Misc.cpp">
+    <ClCompile Include="Antario\Utils\NetvarManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\AntiAim.cpp">
+    <ClCompile Include="Antario\Utils\UtlBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\DamageIndicator.cpp">
+    <ClCompile Include="Antario\Utils\UtlString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Resolver.cpp">
+    <ClCompile Include="Antario\Utils\Vector4D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Features\Ragewall.cpp">
+    <ClCompile Include="Antario\DLLMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\UtlBuffer.cpp">
+    <ClCompile Include="Antario\Hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\UtlString.cpp">
+    <ClCompile Include="Antario\Menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mirror\Utils\characterset.cpp">
+    <ClCompile Include="Antario\Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,184 +95,184 @@
     <ClInclude Include="Antario\Menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Aimbot.h">
+    <ClInclude Include="Antario\Features\Aimbot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\EnginePrediction.h">
+    <ClInclude Include="Antario\Features\AntiAim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\ESP.h">
+    <ClInclude Include="Antario\Features\Backtrack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Features.h">
+    <ClInclude Include="Antario\Features\Chams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Misc.h">
+    <ClInclude Include="Antario\Features\DamageIndicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\GUI\GUI.h">
+    <ClInclude Include="Antario\Features\EnginePrediction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\CEntity.h">
+    <ClInclude Include="Antario\Features\ESP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\CGlobalVarsBase.h">
+    <ClInclude Include="Antario\Features\Features.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\CHandle.h">
+    <ClInclude Include="Antario\Features\Misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\CInput.h">
+    <ClInclude Include="Antario\Features\Ragewall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\ClientClass.h">
+    <ClInclude Include="Antario\Features\Resolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\CPrediction.h">
+    <ClInclude Include="Antario\GUI\GUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\Definitions.h">
+    <ClInclude Include="Antario\SDK\CEntity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IBaseClientDll.h">
+    <ClInclude Include="Antario\SDK\CGlobalVarsBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientEntity.h">
+    <ClInclude Include="Antario\SDK\CHandle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientEntityList.h">
+    <ClInclude Include="Antario\SDK\CInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientMode.h">
+    <ClInclude Include="Antario\SDK\ClientClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientNetworkable.h">
+    <ClInclude Include="Antario\SDK\CPrediction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientRenderable.h">
+    <ClInclude Include="Antario\SDK\Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientThinkable.h">
+    <ClInclude Include="Antario\SDK\IBaseClientDll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IClientUnknown.h">
+    <ClInclude Include="Antario\SDK\IClientEntity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IGameEvent.h">
+    <ClInclude Include="Antario\SDK\IClientEntityList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IVEngineClient.h">
+    <ClInclude Include="Antario\SDK\IClientMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\KeyValues.h">
+    <ClInclude Include="Antario\SDK\IClientNetworkable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\PlayerInfo.h">
+    <ClInclude Include="Antario\SDK\IClientRenderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\Recv.h">
+    <ClInclude Include="Antario\SDK\IClientThinkable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\Studio.hpp">
+    <ClInclude Include="Antario\SDK\IClientUnknown.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\Vector.h">
+    <ClInclude Include="Antario\SDK\IEngineTrace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\VMatrix.h">
+    <ClInclude Include="Antario\SDK\IGameEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\Color.h">
+    <ClInclude Include="Antario\SDK\IPhysics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\D3DFont.h">
+    <ClInclude Include="Antario\SDK\IVEngineClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\DrawManager.h">
+    <ClInclude Include="Antario\SDK\IVModelInfoClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\GlobalVars.h">
+    <ClInclude Include="Antario\SDK\IVModelRender.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\Interfaces.h">
+    <ClInclude Include="Antario\SDK\KeyValues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\NetvarManager.h">
+    <ClInclude Include="Antario\SDK\PlayerInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\SPoint.h">
+    <ClInclude Include="Antario\SDK\Recv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\SRect.h">
+    <ClInclude Include="Antario\SDK\Studio.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\Utils.h">
+    <ClInclude Include="Antario\SDK\Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\Vector4D.hpp">
+    <ClInclude Include="Antario\SDK\VMatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\EventListener.h">
+    <ClInclude Include="Antario\Utils\CGrenadeAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Hooks.h">
+    <ClInclude Include="Antario\Utils\characterset.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Settings.h">
+    <ClInclude Include="Antario\Utils\Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Backtrack.h">
+    <ClInclude Include="Antario\Utils\D3DFont.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IVModelInfoClient.hpp">
+    <ClInclude Include="Antario\Utils\DrawManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\CGrenadeAPI.h">
+    <ClInclude Include="Antario\Utils\GlobalVars.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IVModelRender.hpp">
+    <ClInclude Include="Antario\Utils\ICvar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Chams.h">
+    <ClInclude Include="Antario\Utils\Interfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IPhysics.h">
+    <ClInclude Include="Antario\Utils\NetvarManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\ICvar.h">
+    <ClInclude Include="Antario\Utils\platform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\SDK\IEngineTrace.hpp">
+    <ClInclude Include="Antario\Utils\SPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\AntiAim.h">
+    <ClInclude Include="Antario\Utils\SRect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\DamageIndicator.h">
+    <ClInclude Include="Antario\Utils\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Resolver.h">
+    <ClInclude Include="Antario\Utils\UtlBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Features\Ragewall.h">
+    <ClInclude Include="Antario\Utils\UtlMemory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\UtlBuffer.hpp">
+    <ClInclude Include="Antario\Utils\UtlString.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\UtlMemory.hpp">
+    <ClInclude Include="Antario\Utils\UtlVector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\UtlString.hpp">
+    <ClInclude Include="Antario\Utils\Vector4D.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\UtlVector.hpp">
+    <ClInclude Include="Antario\EventListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\characterset.hpp">
+    <ClInclude Include="Antario\Hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mirror\Utils\platform.hpp">
+    <ClInclude Include="Antario\Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
